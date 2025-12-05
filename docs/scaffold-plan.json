@@ -1,0 +1,392 @@
+{
+  "artifact_type": "scaffold_plan",
+  "status": "complete",
+  "validation": "passed",
+  "approval_required": true,
+  "approvers": [
+    "Cynthia",
+    "Usama"
+  ],
+  "next_phase": "scaffold_apply",
+  "data": {
+    "project_name": "Richtungswechsel ROI Tracker - SaaS Migration",
+    "version": "1.0.0",
+    "created_at": "2025-10-16T13:32:46.609950",
+    "mode": "plan",
+    "feature_selections": {
+      "auth": "none",
+      "db": "firebase",
+      "storage": "firebase",
+      "realtime": true,
+      "ci": true,
+      "docs": true
+    },
+    "templates_to_apply": [
+      {
+        "id": "SCAFFOLD-001",
+        "name": "Next.js 14 App Router Foundation",
+        "source_path": "templates/frontend/nextjs-14",
+        "target_path": "./",
+        "variables": {
+          "project_name": "richtungswechsel-roi-tracker",
+          "auth_provider": "clerk",
+          "database_type": "firebase",
+          "additional_vars": {
+            "german_locale": true,
+            "color_scheme": {
+              "primary": "#003f5c",
+              "secondary": "#ffb600"
+            }
+          }
+        },
+        "files_to_generate": [
+          "package.json",
+          "next.config.js",
+          "tsconfig.json",
+          "tailwind.config.ts",
+          ".env.example",
+          "app/layout.tsx",
+          "app/page.tsx",
+          "middleware.ts"
+        ]
+      },
+      {
+        "id": "SCAFFOLD-002",
+        "name": "Clerk Authentication Integration",
+        "source_path": "templates/auth/clerk",
+        "target_path": "app/",
+        "variables": {
+          "project_name": "richtungswechsel-roi-tracker",
+          "auth_provider": "clerk"
+        },
+        "files_to_generate": [
+          "sign-in/[[...sign-in]]/page.tsx",
+          "sign-up/[[...sign-up]]/page.tsx",
+          "api/webhooks/clerk/route.ts",
+          "components/auth/SignInButton.tsx",
+          "components/auth/SignOutButton.tsx",
+          "components/auth/UserButton.tsx"
+        ]
+      },
+      {
+        "id": "SCAFFOLD-003",
+        "name": "Firebase Configuration and Setup",
+        "source_path": "templates/backend/firebase",
+        "target_path": "./",
+        "variables": {
+          "project_name": "richtungswechsel-roi-tracker",
+          "database_type": "firebase"
+        },
+        "files_to_generate": [
+          "firebase.json",
+          ".firebaserc",
+          "firestore.rules",
+          "firestore.indexes.json",
+          "storage.rules",
+          "lib/firebase/config.ts",
+          "lib/firebase/firestore.ts",
+          "lib/firebase/storage.ts",
+          "functions/package.json",
+          "functions/tsconfig.json",
+          "functions/src/index.ts"
+        ]
+      },
+      {
+        "id": "SCAFFOLD-004",
+        "name": "Firestore Collections Schema (German Fields)",
+        "source_path": "templates/backend/firebase-schema",
+        "target_path": "lib/types/",
+        "variables": {
+          "project_name": "richtungswechsel-roi-tracker",
+          "german_fields": true
+        },
+        "files_to_generate": [
+          "organizations.types.ts",
+          "advisors.types.ts",
+          "roiInputs.types.ts",
+          "rwProjections.types.ts",
+          "monthlyActuals.types.ts",
+          "exports.types.ts"
+        ]
+      },
+      {
+        "id": "SCAFFOLD-005",
+        "name": "Firebase Functions (ROI Calculations)",
+        "source_path": "templates/functions/roi-calculations",
+        "target_path": "functions/src/",
+        "variables": {
+          "project_name": "richtungswechsel-roi-tracker"
+        },
+        "files_to_generate": [
+          "calculateRoi.ts",
+          "generateRwProjections.ts",
+          "generateCsvExport.ts",
+          "calculatePerformanceMetrics.ts",
+          "syncClerkUser.ts"
+        ]
+      },
+      {
+        "id": "SCAFFOLD-006",
+        "name": "App Routes and Pages",
+        "source_path": "templates/pages/roi-tracker",
+        "target_path": "app/",
+        "variables": {
+          "project_name": "richtungswechsel-roi-tracker",
+          "german_locale": true
+        },
+        "files_to_generate": [
+          "analyse/page.tsx",
+          "eingaben/page.tsx",
+          "rw-tracking/page.tsx",
+          "ist-tracking/page.tsx",
+          "analytics/page.tsx",
+          "admin/page.tsx",
+          "components/RoiAnalyseForm.tsx",
+          "components/EingabenTabs.tsx",
+          "components/RwProjectionsTable.tsx",
+          "components/IstComparisonTable.tsx",
+          "components/PerformanceCharts.tsx",
+          "components/AdminDashboard.tsx"
+        ]
+      },
+      {
+        "id": "SCAFFOLD-007",
+        "name": "Tailwind CSS Configuration (German Dark Blue + Yellow)",
+        "source_path": "templates/styles/tailwind-custom",
+        "target_path": "./",
+        "variables": {
+          "project_name": "richtungswechsel-roi-tracker",
+          "color_scheme": {
+            "primary": "#003f5c",
+            "secondary": "#ffb600"
+          }
+        },
+        "files_to_generate": [
+          "app/globals.css",
+          "tailwind.config.ts"
+        ]
+      },
+      {
+        "id": "SCAFFOLD-008",
+        "name": "Chart.js Components (German Labels)",
+        "source_path": "templates/charts/chartjs",
+        "target_path": "components/charts/",
+        "variables": {
+          "project_name": "richtungswechsel-roi-tracker",
+          "german_labels": true
+        },
+        "files_to_generate": [
+          "BarChart.tsx",
+          "DoughnutChart.tsx",
+          "LineChart.tsx",
+          "AreaChart.tsx",
+          "chartConfig.ts"
+        ]
+      },
+      {
+        "id": "SCAFFOLD-009",
+        "name": "Testing Infrastructure",
+        "source_path": "templates/testing/jest-rtl",
+        "target_path": "./",
+        "variables": {
+          "project_name": "richtungswechsel-roi-tracker"
+        },
+        "files_to_generate": [
+          "jest.config.js",
+          "jest.setup.js",
+          "__tests__/components/RoiAnalyseForm.test.tsx",
+          "__tests__/lib/calculateRoi.test.ts",
+          "__tests__/integration/auth.test.ts"
+        ]
+      },
+      {
+        "id": "SCAFFOLD-010",
+        "name": "CI/CD Pipeline (GitHub Actions)",
+        "source_path": "templates/cicd/github-actions",
+        "target_path": ".github/workflows/",
+        "variables": {
+          "project_name": "richtungswechsel-roi-tracker"
+        },
+        "files_to_generate": [
+          "test.yml",
+          "deploy-staging.yml",
+          "deploy-production.yml",
+          "firebase-hosting-merge.yml",
+          "firebase-hosting-pull-request.yml"
+        ]
+      },
+      {
+        "id": "SCAFFOLD-011",
+        "name": "Documentation",
+        "source_path": "templates/docs/readme-standard",
+        "target_path": "./",
+        "variables": {
+          "project_name": "richtungswechsel-roi-tracker",
+          "german_locale": true
+        },
+        "files_to_generate": [
+          "README.md",
+          "CONTRIBUTING.md",
+          "docs/SETUP.md",
+          "docs/DEPLOYMENT.md",
+          "docs/ARCHITECTURE.md",
+          "docs/GERMAN_FIELDS.md"
+        ]
+      },
+      {
+        "id": "SCAFFOLD-012",
+        "name": "Project-Specific Agent System & Umbilical Cord",
+        "source_path": "templates/agents/project-specific",
+        "target_path": "./",
+        "variables": {
+          "project_name": "richtungswechsel-roi-tracker",
+          "mothership_location": "/Users/hermannrohr/Documents/End to End Pipeline Human in the Loop",
+          "generated_at": "2025-10-16T18:43:29.768420"
+        },
+        "files_to_generate": [
+          "agents/_common.guardrails.md",
+          "agents/Feature.agent.md",
+          "agents/Coding.agent.md",
+          "agents/Bugfix.agent.md",
+          ".cursorrules",
+          "mothership/connection.json",
+          "mothership/README.md"
+        ]
+      }
+    ],
+    "directory_structure": {
+      "app/": "Next.js 14 App Router pages and components",
+      "app/analyse/": "ROI analysis page",
+      "app/eingaben/": "Three-tab input management page",
+      "app/rw-tracking/": "RW best practice projections page",
+      "app/ist-tracking/": "Actual vs target comparison page",
+      "app/analytics/": "Performance analytics and visualizations",
+      "app/admin/": "Admin dashboard for coaching companies",
+      "app/api/webhooks/clerk/": "Clerk webhook endpoints",
+      "app/components/": "Reusable React components",
+      "app/components/auth/": "Authentication components",
+      "app/components/charts/": "Chart.js visualizations",
+      "lib/": "Shared utilities and libraries",
+      "lib/firebase/": "Firebase SDK configuration",
+      "lib/types/": "TypeScript type definitions (German fields)",
+      "functions/": "Firebase Cloud Functions",
+      "functions/src/": "Function source code (ROI calculations, CSV exports)",
+      "public/": "Static assets",
+      "docs/": "Project documentation",
+      "docs/adr/": "Architecture Decision Records (mothership + project)",
+      ".github/workflows/": "GitHub Actions CI/CD pipelines",
+      "__tests__/": "Jest unit and integration tests",
+      "agents/": "Project-specific AI agents (Feature, Coding, Bugfix)",
+      "mothership/": "Umbilical cord connection to parent pipeline"
+    },
+    "dependencies": {
+      "frontend": [
+        "next@14.0.4",
+        "@clerk/nextjs@4.29.1",
+        "firebase@10.7.1",
+        "react@18.2.0",
+        "react-dom@18.2.0",
+        "react-chartjs-2@5.2.0",
+        "chart.js@4.4.0",
+        "tailwindcss@3.4.0",
+        "typescript@5.3.3",
+        "@types/react@18.2.45",
+        "@types/node@20.10.5",
+        "zod@3.22.4",
+        "clsx@2.0.0",
+        "date-fns@2.30.0"
+      ],
+      "functions": [
+        "firebase-admin@12.0.0",
+        "firebase-functions@4.5.0",
+        "typescript@5.3.3"
+      ],
+      "dev": [
+        "jest@29.7.0",
+        "@testing-library/react@14.1.2",
+        "@testing-library/jest-dom@6.1.5",
+        "eslint@8.56.0",
+        "eslint-config-next@14.0.4",
+        "prettier@3.1.1"
+      ]
+    },
+    "environment_variables": [
+      {
+        "name": "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+        "description": "Clerk publishable key for frontend authentication",
+        "example": "pk_test_..."
+      },
+      {
+        "name": "CLERK_SECRET_KEY",
+        "description": "Clerk secret key for server-side operations",
+        "example": "sk_test_..."
+      },
+      {
+        "name": "CLERK_WEBHOOK_SECRET",
+        "description": "Clerk webhook signing secret for user sync",
+        "example": "whsec_..."
+      },
+      {
+        "name": "NEXT_PUBLIC_FIREBASE_API_KEY",
+        "description": "Firebase API key for frontend SDK",
+        "example": "AIzaSy..."
+      },
+      {
+        "name": "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
+        "description": "Firebase auth domain",
+        "example": "richtungswechsel-roi.firebaseapp.com"
+      },
+      {
+        "name": "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
+        "description": "Firebase project ID",
+        "example": "richtungswechsel-roi"
+      },
+      {
+        "name": "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET",
+        "description": "Firebase storage bucket",
+        "example": "richtungswechsel-roi.appspot.com"
+      },
+      {
+        "name": "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID",
+        "description": "Firebase messaging sender ID",
+        "example": "123456789012"
+      },
+      {
+        "name": "NEXT_PUBLIC_FIREBASE_APP_ID",
+        "description": "Firebase app ID",
+        "example": "1:123456789012:web:..."
+      },
+      {
+        "name": "FIREBASE_SERVICE_ACCOUNT_KEY",
+        "description": "Firebase service account JSON for Cloud Functions (base64 encoded)",
+        "example": "eyJ0eXBlIjoic2VydmljZV9hY2NvdW50..."
+      }
+    ],
+    "next_steps": [
+      "Review and approve this scaffolding plan",
+      "Review project-specific agents in agents/ directory",
+      "Customize agent prompts for project needs (if needed)",
+      "Understand mothership connection in mothership/README.md",
+      "Create Firebase project in europe-west3 (Germany) region",
+      "Create Clerk application and configure organization settings",
+      "Run: make scaffold-apply (or equivalent apply script)",
+      "Copy .env.example to .env.local and fill in environment variables",
+      "Run: npm install (to install frontend dependencies)",
+      "Run: cd functions && npm install (to install function dependencies)",
+      "Run: firebase login (authenticate with Firebase)",
+      "Run: firebase use --add (select Firebase project)",
+      "Deploy Firestore security rules: firebase deploy --only firestore:rules",
+      "Deploy Firestore indexes: firebase deploy --only firestore:indexes",
+      "Deploy Cloud Functions: firebase deploy --only functions",
+      "Configure Clerk webhook endpoint: https://[your-domain]/api/webhooks/clerk",
+      "Run: npm run dev (start development server)",
+      "Verify authentication flow with Clerk",
+      "Test Firestore data persistence",
+      "Migrate MVP formulas to functions/src/calculateRoi.ts",
+      "Run: npm run test (execute test suite)",
+      "Set up Vercel project for frontend hosting",
+      "Configure GitHub Actions secrets for CI/CD"
+    ],
+    "estimated_setup_time": "2-3 hours (including Firebase/Clerk account setup)"
+  }
+}

@@ -1,0 +1,492 @@
+{
+  "artifact_type": "journey",
+  "status": "complete",
+  "validation": "passed",
+  "approval_required": true,
+  "approvers": ["Cynthia", "Hassan"],
+  "next_phase": "task_planning",
+  "data": {
+    "project_name": "Richtungswechsel ROI Tracker - SaaS Migration",
+    "version": "1.0.0",
+    "created_at": "2025-10-15T00:00:00Z",
+    "personas": [
+      {
+        "id": "PERSONA-001",
+        "name": "Financial Advisor (Berater)",
+        "description": "A financial advisor who is a member of a coaching program and needs to track their ROI performance against projections to measure the effectiveness of the coaching investment.",
+        "goals": [
+          "Track actual performance vs RW projections to measure ROI",
+          "Understand which customer acquisition channels are most effective",
+          "Make data-driven decisions about business investments",
+          "Export data for external analysis and reporting",
+          "See visual progress over time to stay motivated"
+        ],
+        "pain_points": [
+          "Current MVP uses localStorage - data not accessible across devices",
+          "No multi-user support - can't share with team or coach",
+          "Manual data entry is time-consuming",
+          "Difficult to compare actuals vs projections at a glance",
+          "No historical versioning of projections"
+        ],
+        "context": "German-speaking financial advisor who joined Richtungswechsel coaching program. Uses the tool monthly to track performance, primarily on desktop during business hours. Needs German UI/UX. Values simplicity and speed over complex features."
+      },
+      {
+        "id": "PERSONA-002",
+        "name": "Coaching Company Admin (Organisations-Admin)",
+        "description": "Owner/manager of a coaching company (like Richtungswechsel) who provides ROI tracking to their clients (financial advisors). Needs to manage multiple advisors, view aggregate performance, and ensure clients are getting value from the coaching program.",
+        "goals": [
+          "Manage multiple financial advisor accounts efficiently",
+          "View performance dashboard across all advisors to measure coaching effectiveness",
+          "Identify advisors who need additional support based on performance gaps",
+          "Export aggregate data for program improvement and marketing",
+          "Ensure data security and multi-tenancy isolation"
+        ],
+        "pain_points": [
+          "No visibility into client performance in current MVP",
+          "Manual account creation and management",
+          "Can't identify at-risk clients proactively",
+          "No aggregate reporting for program ROI",
+          "Difficult to scale beyond a few clients"
+        ],
+        "context": "German-speaking coaching company owner managing 10-25 financial advisors. Needs admin dashboard with overview metrics, user management, and reporting. Values reliability, security, and scalability."
+      }
+    ],
+    "journeys": [
+      {
+        "id": "JRN-001",
+        "name": "Advisor Onboarding and First Projection",
+        "description": "New financial advisor signs up, enters initial ROI data, and views their first 12-month projection",
+        "persona_id": "PERSONA-001",
+        "flow_ids": ["FLOW-001", "FLOW-003"],
+        "story_ids": ["ST-001", "ST-004", "ST-005", "ST-006"],
+        "phases": [
+          {
+            "id": "PHASE-001",
+            "name": "Account Creation",
+            "description": "Advisor creates account via Clerk authentication and completes profile",
+            "duration_estimate": "3 minutes",
+            "touchpoints": [
+              {
+                "id": "TP-001",
+                "name": "Sign-up Form",
+                "type": "web",
+                "description": "Clerk-powered sign-up with email/password or OAuth",
+                "flow_step_id": "STEP-001",
+                "data_entities": ["advisors"],
+                "user_actions": ["Enter email and password", "Click 'Registrieren' button", "Verify email if required"],
+                "system_actions": ["Validate email format", "Create Clerk user", "Send verification email", "Create Firestore advisor document"],
+                "emotional_state": "curious",
+                "pain_points": ["Uncertainty about data privacy", "Friction in email verification"],
+                "opportunities": ["Add social OAuth (Google) for faster signup", "Show trust badges (data security, GDPR compliance)", "Pre-fill organization name if referred"]
+              },
+              {
+                "id": "TP-002",
+                "name": "Welcome Screen",
+                "type": "web",
+                "description": "Post-signup welcome with quick tutorial on ROI tracking",
+                "flow_step_id": "STEP-002",
+                "data_entities": [],
+                "user_actions": ["Read welcome message", "Click 'Los geht's' to start"],
+                "system_actions": ["Show personalized welcome", "Display tutorial video", "Track onboarding progress"],
+                "emotional_state": "confident",
+                "pain_points": [],
+                "opportunities": ["Add interactive product tour", "Show sample data for exploration", "Offer calendar integration for monthly reminders"]
+              }
+            ]
+          },
+          {
+            "id": "PHASE-002",
+            "name": "Initial Data Entry",
+            "description": "Advisor enters baseline business data across 3 tabs (Einnahmen, Kunden, Kosten)",
+            "duration_estimate": "10 minutes",
+            "touchpoints": [
+              {
+                "id": "TP-003",
+                "name": "Eingaben Page - Tab 1: Einnahmen",
+                "type": "web",
+                "description": "Revenue input form with German field labels",
+                "flow_step_id": "STEP-003",
+                "data_entities": ["roiInputs"],
+                "user_actions": ["Enter aktuelleJaehrlicheEinnahmen", "Enter durchschnittlicherKundenwert", "Click 'Weiter' to next tab"],
+                "system_actions": ["Validate numeric inputs", "Show real-time field validation", "Auto-save draft to Firestore"],
+                "emotional_state": "curious",
+                "pain_points": ["Unclear what exact values to enter", "No guidance on typical ranges"],
+                "opportunities": ["Add tooltips with examples", "Show industry benchmarks", "Offer CSV import from accounting software"]
+              },
+              {
+                "id": "TP-004",
+                "name": "Eingaben Page - Tab 2: Kunden",
+                "type": "web",
+                "description": "Customer acquisition input across multiple channels",
+                "flow_step_id": "STEP-004",
+                "data_entities": ["roiInputs"],
+                "user_actions": ["Enter customer counts for Mitgliederportal, Online, Offline, Einzelcoaching", "Enter conversion rates", "Click 'Weiter'"],
+                "system_actions": ["Validate ranges (0-100 for percentages)", "Show channel breakdown chart preview", "Auto-save"],
+                "emotional_state": "confident",
+                "pain_points": ["Difficult to estimate future customer acquisition"],
+                "opportunities": ["Add historical data import", "Show projection preview in real-time", "Suggest realistic growth rates"]
+              },
+              {
+                "id": "TP-005",
+                "name": "Eingaben Page - Tab 3: Kosten",
+                "type": "web",
+                "description": "Cost input for customer acquisition and monthly fixed costs",
+                "flow_step_id": "STEP-005",
+                "data_entities": ["roiInputs"],
+                "user_actions": ["Enter kundengewinnungskosten", "Enter monatlicheKosten", "Select scenario (50%/70%/100%)", "Click 'Berechnen'"],
+                "system_actions": ["Calculate total investment", "Show scenario comparison", "Trigger Cloud Function for projection calculation"],
+                "emotional_state": "confident",
+                "pain_points": ["Uncertainty about which scenario to choose"],
+                "opportunities": ["Explain scenario differences clearly", "Allow custom scenario percentages", "Show break-even analysis"]
+              }
+            ]
+          },
+          {
+            "id": "PHASE-003",
+            "name": "Projection Review",
+            "description": "Advisor views calculated 12-month RW projections with charts",
+            "duration_estimate": "5 minutes",
+            "touchpoints": [
+              {
+                "id": "TP-006",
+                "name": "RW Tracking Page",
+                "type": "web",
+                "description": "12-month projection table and Chart.js visualizations",
+                "flow_step_id": "STEP-006",
+                "data_entities": ["rwProjections"],
+                "user_actions": ["Review monthly projections", "Analyze charts (customers, revenue, costs, ROI)", "Export to CSV if needed"],
+                "system_actions": ["Display 12 months of projections", "Render line charts with Chart.js", "Calculate cumulative totals", "Enable CSV download"],
+                "emotional_state": "satisfied",
+                "pain_points": ["Charts may be overwhelming for first-time users"],
+                "opportunities": ["Add chart filters (show/hide specific metrics)", "Provide projection summary (total ROI, break-even month)", "Enable PDF export for client presentations"]
+              }
+            ]
+          }
+        ],
+        "success_metrics": [
+          {
+            "metric": "Onboarding completion rate",
+            "target": "85% of new advisors complete all 3 input tabs",
+            "measurement": "Firestore query for advisors with version > 0 ROI inputs"
+          },
+          {
+            "metric": "Time to first projection",
+            "target": "< 15 minutes from signup to viewing RW projections",
+            "measurement": "createdAt timestamp diff between advisor and rwProjections documents"
+          },
+          {
+            "metric": "Data quality",
+            "target": "< 5% of advisors leave default 0 values in all fields",
+            "measurement": "Count roiInputs with sum of all numeric fields = 0"
+          }
+        ]
+      },
+      {
+        "id": "JRN-002",
+        "name": "Monthly Actual Data Entry and Performance Review",
+        "description": "Advisor enters actual monthly performance and compares to projections",
+        "persona_id": "PERSONA-001",
+        "flow_ids": ["FLOW-005", "FLOW-006", "FLOW-007"],
+        "story_ids": ["ST-010", "ST-011", "ST-012", "ST-015", "ST-016"],
+        "phases": [
+          {
+            "id": "PHASE-004",
+            "name": "Monthly Data Entry",
+            "description": "Advisor logs actual customers, revenue, and costs for the month",
+            "duration_estimate": "5 minutes",
+            "touchpoints": [
+              {
+                "id": "TP-007",
+                "name": "IST Tracking Page",
+                "type": "web",
+                "description": "Form to enter actual monthly performance data",
+                "flow_step_id": "STEP-007",
+                "data_entities": ["monthlyActuals"],
+                "user_actions": ["Select month", "Enter neueKundenIst", "Enter umsatzIst", "Enter kostenIst", "Add optional notizen", "Click 'Speichern'"],
+                "system_actions": ["Calculate gewinnIst (revenue - costs)", "Calculate variance from RW projection", "Mark month as complete", "Update Firestore"],
+                "emotional_state": "confident",
+                "pain_points": ["Forgetting to enter data monthly", "Manual data entry is tedious"],
+                "opportunities": ["Add email/SMS reminders on 1st of month", "Integrate with accounting software API", "Pre-fill data from bank statements (future)"]
+              }
+            ]
+          },
+          {
+            "id": "PHASE-005",
+            "name": "Performance Comparison",
+            "description": "Advisor reviews IST vs RW variance to understand performance gaps",
+            "duration_estimate": "8 minutes",
+            "touchpoints": [
+              {
+                "id": "TP-008",
+                "name": "Performance Analytics Page",
+                "type": "web",
+                "description": "Side-by-side comparison of projections vs actuals with variance highlights",
+                "flow_step_id": "STEP-008",
+                "data_entities": ["rwProjections", "monthlyActuals"],
+                "user_actions": ["View comparison table", "Analyze variance trends", "Identify months with largest gaps", "Screenshot for coaching session"],
+                "system_actions": ["Join RW projections with IST actuals by month", "Calculate % variance for revenue and customers", "Highlight positive (green) and negative (red) variances", "Show cumulative performance"],
+                "emotional_state": "frustrated",
+                "pain_points": ["Seeing negative variance is demotivating", "Unclear what actions to take to improve"],
+                "opportunities": ["Add AI-powered insights (e.g., 'You're 15% below in online customer acquisition')", "Show recommended actions based on gaps", "Connect to coaching resources"]
+              },
+              {
+                "id": "TP-009",
+                "name": "Performance Charts",
+                "type": "web",
+                "description": "Visual charts comparing projected vs actual performance over time",
+                "flow_step_id": "STEP-009",
+                "data_entities": ["rwProjections", "monthlyActuals"],
+                "user_actions": ["Toggle between revenue, customers, costs, ROI views", "Zoom into specific time periods", "Export chart as image"],
+                "system_actions": ["Render dual-line charts (projected in blue, actual in orange)", "Show confidence intervals", "Enable interactive tooltips"],
+                "emotional_state": "satisfied",
+                "pain_points": ["Charts can be cluttered with too much data"],
+                "opportunities": ["Add chart customization (colors, axes)", "Enable year-over-year comparison", "Add goal markers on charts"]
+              }
+            ]
+          }
+        ],
+        "success_metrics": [
+          {
+            "metric": "Monthly data entry compliance",
+            "target": "75% of advisors enter IST data within 7 days of month end",
+            "measurement": "Count monthlyActuals.createdAt within 7 days of month boundary"
+          },
+          {
+            "metric": "Performance review engagement",
+            "target": "60% of advisors view Performance Analytics page at least once per month",
+            "measurement": "Analytics event tracking for page views"
+          },
+          {
+            "metric": "Variance awareness",
+            "target": "50% reduction in performance gaps after 3 months of tracking",
+            "measurement": "Average absolute variance (IST vs RW) trending downward"
+          }
+        ]
+      },
+      {
+        "id": "JRN-003",
+        "name": "Admin Dashboard - Advisor Management",
+        "description": "Coaching company admin manages advisors, views aggregate performance, and identifies support needs",
+        "persona_id": "PERSONA-002",
+        "flow_ids": ["FLOW-008"],
+        "story_ids": ["ST-019", "ST-020", "ST-021"],
+        "phases": [
+          {
+            "id": "PHASE-006",
+            "name": "Admin Login and Dashboard Access",
+            "description": "Admin logs in with elevated permissions and accesses organization dashboard",
+            "duration_estimate": "2 minutes",
+            "touchpoints": [
+              {
+                "id": "TP-010",
+                "name": "Admin Login",
+                "type": "web",
+                "description": "Clerk authentication with role-based redirect to admin dashboard",
+                "flow_step_id": "STEP-010",
+                "data_entities": ["advisors"],
+                "user_actions": ["Enter admin credentials", "Click 'Anmelden'"],
+                "system_actions": ["Verify role === 'admin'", "Redirect to /admin/dashboard", "Load organization data"],
+                "emotional_state": "confident",
+                "pain_points": ["No dedicated admin login flow"],
+                "opportunities": ["Add 2FA for admin accounts", "Show admin-specific welcome message", "Display recent activity feed"]
+              }
+            ]
+          },
+          {
+            "id": "PHASE-007",
+            "name": "Advisor Monitoring",
+            "description": "Admin views list of all advisors with performance summary",
+            "duration_estimate": "10 minutes",
+            "touchpoints": [
+              {
+                "id": "TP-011",
+                "name": "Advisor List Table",
+                "type": "web",
+                "description": "Sortable/filterable table of all advisors with key metrics",
+                "flow_step_id": "STEP-011",
+                "data_entities": ["advisors", "rwProjections", "monthlyActuals"],
+                "user_actions": ["Sort by performance variance", "Filter by active/inactive", "Click advisor row to view details", "Search by name/email"],
+                "system_actions": ["Query all advisors in organization", "Calculate aggregate metrics per advisor", "Show status indicators (green = on track, yellow = slightly behind, red = significantly behind)", "Enable pagination for large datasets"],
+                "emotional_state": "confident",
+                "pain_points": ["Difficult to identify at-risk advisors at a glance", "No alerting for advisors falling behind"],
+                "opportunities": ["Add automatic alerts for advisors with >20% negative variance", "Show trend arrows (improving/declining)", "Export advisor list to CSV"]
+              },
+              {
+                "id": "TP-012",
+                "name": "Advisor Detail View",
+                "type": "web",
+                "description": "Drill-down view of individual advisor's full ROI journey",
+                "flow_step_id": "STEP-012",
+                "data_entities": ["advisors", "roiInputs", "rwProjections", "monthlyActuals"],
+                "user_actions": ["View advisor profile", "Review their RW projections", "Compare to IST actuals", "Add admin notes"],
+                "system_actions": ["Load full advisor data", "Show all versions of ROI inputs", "Display performance charts", "Enable admin annotations"],
+                "emotional_state": "satisfied",
+                "pain_points": ["Switching between multiple views is cumbersome"],
+                "opportunities": ["Add side-by-side comparison with cohort average", "Enable direct messaging to advisor", "Show coaching session history"]
+              }
+            ]
+          },
+          {
+            "id": "PHASE-008",
+            "name": "Aggregate Reporting",
+            "description": "Admin generates organization-wide performance reports",
+            "duration_estimate": "5 minutes",
+            "touchpoints": [
+              {
+                "id": "TP-013",
+                "name": "Organization Dashboard",
+                "type": "web",
+                "description": "High-level metrics for entire coaching program",
+                "flow_step_id": "STEP-013",
+                "data_entities": ["organizations", "advisors", "rwProjections", "monthlyActuals"],
+                "user_actions": ["View total advisors count", "Review average ROI across all advisors", "Check data entry compliance rate", "Export organization report"],
+                "system_actions": ["Aggregate all advisor data", "Calculate organization-level KPIs", "Show trend charts over time", "Generate PDF report"],
+                "emotional_state": "satisfied",
+                "pain_points": ["No real-time updates - requires page refresh"],
+                "opportunities": ["Add WebSocket real-time updates", "Show leaderboard of top performers", "Add benchmarking against industry averages"]
+              }
+            ]
+          }
+        ],
+        "success_metrics": [
+          {
+            "metric": "Admin engagement",
+            "target": "Admins check dashboard at least 2x per week",
+            "measurement": "Analytics event tracking for admin dashboard page views"
+          },
+          {
+            "metric": "At-risk advisor identification",
+            "target": "Admins contact 80% of advisors flagged as 'significantly behind' within 48 hours",
+            "measurement": "Manual tracking via CRM integration"
+          },
+          {
+            "metric": "Organization-level reporting",
+            "target": "100% of admins export quarterly reports for program evaluation",
+            "measurement": "Count of PDF/CSV exports from organization dashboard per quarter"
+          }
+        ]
+      },
+      {
+        "id": "JRN-004",
+        "name": "Data Export and External Analysis",
+        "description": "Advisor exports their ROI data for use in presentations, tax preparation, or external analysis",
+        "persona_id": "PERSONA-001",
+        "flow_ids": ["FLOW-009"],
+        "story_ids": ["ST-022", "ST-023"],
+        "phases": [
+          {
+            "id": "PHASE-009",
+            "name": "Export Request",
+            "description": "Advisor selects export format and initiates download",
+            "duration_estimate": "2 minutes",
+            "touchpoints": [
+              {
+                "id": "TP-014",
+                "name": "Export Modal",
+                "type": "web",
+                "description": "Modal dialog with export options (RW projections, IST actuals, performance comparison, full report)",
+                "flow_step_id": "STEP-014",
+                "data_entities": ["exports"],
+                "user_actions": ["Click 'Exportieren' button", "Select export type", "Choose date range", "Click 'Download'"],
+                "system_actions": ["Validate date range", "Trigger Cloud Function to generate CSV", "Store export in Firebase Storage", "Generate signed download URL", "Create export record in Firestore"],
+                "emotional_state": "confident",
+                "pain_points": ["Export takes time to generate", "No notification when ready"],
+                "opportunities": ["Add email notification when export is ready", "Support Excel (.xlsx) format", "Enable scheduled exports (e.g., monthly automatic email)"]
+              },
+              {
+                "id": "TP-015",
+                "name": "Download Link",
+                "type": "web",
+                "description": "Link to download CSV file from Firebase Storage",
+                "flow_step_id": "STEP-015",
+                "data_entities": ["exports"],
+                "user_actions": ["Click download link", "Save file to local machine"],
+                "system_actions": ["Serve file from Firebase Storage via signed URL", "Track download event", "Set 24-hour expiration on link"],
+                "emotional_state": "satisfied",
+                "pain_points": ["Link expires after 24 hours - may lose access"],
+                "opportunities": ["Add 'Export History' page to re-download old exports", "Support direct integration with Google Sheets", "Enable API access for programmatic exports"]
+              }
+            ]
+          }
+        ],
+        "success_metrics": [
+          {
+            "metric": "Export usage",
+            "target": "40% of active advisors export data at least once per quarter",
+            "measurement": "Count unique advisorIds with exports per quarter"
+          },
+          {
+            "metric": "Export success rate",
+            "target": "98% of export requests complete successfully within 30 seconds",
+            "measurement": "exports.status === 'completed' / total exports"
+          }
+        ]
+      }
+    ],
+    "optimization_opportunities": [
+      {
+        "id": "OPP-001",
+        "title": "Automated Data Import from Accounting Software",
+        "description": "Integrate with popular German accounting tools (DATEV, Lexware, sevDesk) to auto-populate IST data monthly, reducing manual entry burden and improving data accuracy.",
+        "impact": "high",
+        "effort": "high",
+        "touchpoint_ids": ["TP-007"],
+        "expected_improvement": "Reduce monthly data entry time from 5 minutes to <1 minute. Increase IST data entry compliance from 75% to 90%."
+      },
+      {
+        "id": "OPP-002",
+        "title": "AI-Powered Performance Insights",
+        "description": "Add intelligent recommendations based on variance analysis (e.g., 'Your online acquisition is 20% below target. Consider increasing ad spend or improving landing page conversion.') to guide advisors toward corrective actions.",
+        "impact": "high",
+        "effort": "medium",
+        "touchpoint_ids": ["TP-008"],
+        "expected_improvement": "Increase advisor engagement with performance review by 30%. Reduce average variance from 15% to 10% within 3 months."
+      },
+      {
+        "id": "OPP-003",
+        "title": "Mobile App for On-the-Go Data Entry",
+        "description": "Develop React Native mobile app for iOS/Android to enable advisors to log IST data from their phone during commute or between client meetings.",
+        "impact": "medium",
+        "effort": "high",
+        "touchpoint_ids": ["TP-007"],
+        "expected_improvement": "Increase IST data entry compliance by 15%. Improve user satisfaction with convenience rating from 3.5/5 to 4.5/5."
+      },
+      {
+        "id": "OPP-004",
+        "title": "Gamification and Peer Benchmarking",
+        "description": "Add leaderboard showing anonymous performance comparison with peer advisors in same cohort. Award badges for milestones (e.g., '3 months above target', 'Top 10% ROI').",
+        "impact": "medium",
+        "effort": "low",
+        "touchpoint_ids": ["TP-008", "TP-009"],
+        "expected_improvement": "Increase monthly active users by 20%. Boost motivation and reduce churn from 10% to 5% per quarter."
+      },
+      {
+        "id": "OPP-005",
+        "title": "Advanced Admin Analytics Dashboard",
+        "description": "Enhance admin dashboard with cohort analysis, retention curves, LTV predictions, and custom report builder. Enable segmentation by license type, join date, or performance tier.",
+        "impact": "medium",
+        "effort": "medium",
+        "touchpoint_ids": ["TP-013"],
+        "expected_improvement": "Reduce admin time spent on reporting from 2 hours/week to 30 minutes/week. Enable data-driven program improvements leading to 10% better average advisor ROI."
+      },
+      {
+        "id": "OPP-006",
+        "title": "Interactive Onboarding Tutorial",
+        "description": "Replace static welcome screen with interactive Shepherd.js or Intro.js product tour that guides new advisors through first data entry step-by-step.",
+        "impact": "low",
+        "effort": "low",
+        "touchpoint_ids": ["TP-002"],
+        "expected_improvement": "Increase onboarding completion rate from 85% to 95%. Reduce time-to-first-projection from 15 minutes to 12 minutes."
+      },
+      {
+        "id": "OPP-007",
+        "title": "Reminder System for Monthly Data Entry",
+        "description": "Implement automated email/SMS reminders on the 1st and 5th of each month prompting advisors to enter their IST data. Allow customization of reminder frequency in settings.",
+        "impact": "high",
+        "effort": "low",
+        "touchpoint_ids": ["TP-007"],
+        "expected_improvement": "Increase IST data entry compliance from 75% to 85%. Reduce average delay in data entry from 7 days to 3 days."
+      }
+    ]
+  }
+}

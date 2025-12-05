@@ -1,0 +1,580 @@
+{
+  "artifact_type": "prd",
+  "status": "complete",
+  "validation": "passed",
+  "approval_required": true,
+  "approvers": ["Cynthia", "Hermann", "Usama"],
+  "next_phase": "flow_design",
+  "data": {
+    "project_name": "Richtungswechsel ROI Tracker - SaaS Migration",
+    "owner_email": "hermann@kreativreason.com",
+    "created_at": "2025-10-15T00:00:00Z",
+    "version": "2.0.0",
+    "features": [
+      {
+        "id": "FR-001",
+        "title": "Multi-User Authentication System",
+        "description": "Implement secure authentication and authorization using Clerk to support multiple users with role-based access control. Users authenticate via email/password or social login, and are assigned either 'admin' (coaching company) or 'user' (financial advisor) roles.",
+        "priority": "high",
+        "user_stories": [
+          {
+            "id": "ST-001",
+            "title": "User Registration and Sign-up",
+            "description": "As a financial advisor, I want to create an account with my email so that I can access the ROI tracking application",
+            "acceptance_criteria": [
+              "User can sign up with email and password",
+              "User can sign up with social login (Google, LinkedIn)",
+              "Email verification required before access",
+              "User selects role during registration (advisor or coaching company)",
+              "Successful registration redirects to onboarding wizard"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-002",
+            "title": "User Login and Session Management",
+            "description": "As a registered user, I want to log in securely so that I can access my personal data",
+            "acceptance_criteria": [
+              "User can log in with email/password",
+              "User can log in with social providers",
+              "Session persists across browser sessions",
+              "Failed login attempts are rate-limited",
+              "Redirect to role-appropriate dashboard after login"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-003",
+            "title": "Role-Based Access Control",
+            "description": "As a system, I want to enforce role-based permissions so that users only access authorized data",
+            "acceptance_criteria": [
+              "Users can only view and edit their own data",
+              "Admins can view all advisors in their organization",
+              "Firestore security rules enforce data isolation",
+              "Middleware validates roles on every request",
+              "Unauthorized access returns 403 Forbidden"
+            ],
+            "priority": "high"
+          }
+        ]
+      },
+      {
+        "id": "FR-002",
+        "title": "ROI Analysis and Calculation Engine",
+        "description": "Core ROI calculation feature that computes net value, ROI percentage, and payback period based on user inputs. Supports three scenarios (Conservative 50%, Realistic 70%, Optimistic 100%) and displays results with interactive charts. All calculations must match the verified MVP formulas and use German field names.",
+        "priority": "high",
+        "user_stories": [
+          {
+            "id": "ST-004",
+            "title": "Input Current Financial Situation",
+            "description": "As a financial advisor, I want to input my current business metrics so that the system can calculate potential ROI",
+            "acceptance_criteria": [
+              "Form fields for all Grunddaten (basic data) inputs",
+              "Validation for numerical inputs (min/max values)",
+              "Auto-save to Firestore on field blur",
+              "German labels match spreadsheet exactly",
+              "Help text displays for each field"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-005",
+            "title": "Select ROI Scenario",
+            "description": "As a financial advisor, I want to select different scenarios (50%, 70%, 100%) so that I can see conservative, realistic, and optimistic projections",
+            "acceptance_criteria": [
+              "Three scenario buttons: Konservativ, Realistisch, Optimistisch",
+              "Visual indication of selected scenario",
+              "Calculations update in real-time when scenario changes",
+              "Default selection is Realistisch (70%)",
+              "Scenario selection persisted to user profile"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-006",
+            "title": "Calculate and Display ROI Metrics",
+            "description": "As a financial advisor, I want to see calculated ROI metrics so that I can demonstrate coaching value to clients",
+            "acceptance_criteria": [
+              "Display Netto-Mehrwert (net value) in euros",
+              "Display ROI percentage",
+              "Display Payback-Zeitraum (payback period) in months",
+              "Calculations match verified spreadsheet formulas exactly",
+              "Firebase Function performs server-side calculation",
+              "Results update within 500ms of input change"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-007",
+            "title": "Visualize ROI with Charts",
+            "description": "As a financial advisor, I want to see visual charts of my ROI so that I can present data effectively to clients",
+            "acceptance_criteria": [
+              "Bar chart showing revenue before vs after",
+              "Doughnut chart showing value composition",
+              "Doughnut chart showing investment breakdown",
+              "Charts use Chart.js (react-chartjs-2)",
+              "German labels on all charts",
+              "Charts are responsive and mobile-friendly"
+            ],
+            "priority": "medium"
+          }
+        ]
+      },
+      {
+        "id": "FR-003",
+        "title": "Three-Tab Input Management System",
+        "description": "Centralized input management page with three distinct sections: ROI Analyse inputs, Aktivitäten Manager baseline data, and Monatliches Tracking for actual performance. Each tab serves a different purpose and maintains data independence to prevent interference.",
+        "priority": "high",
+        "user_stories": [
+          {
+            "id": "ST-008",
+            "title": "ROI Analyse Input Tab",
+            "description": "As a financial advisor, I want to manage ROI calculation inputs in one place so that I can easily update my financial data",
+            "acceptance_criteria": [
+              "Tab interface with ROI Analyse, Aktivitäten Manager, Monatliches Tracking",
+              "Four subsections: Grunddaten, Kosten & Investition, Umsatzsteigerung, Passive Einkommen",
+              "All German field labels from spreadsheet",
+              "Input validation (number types, ranges)",
+              "Auto-save to Firestore",
+              "Loading indicator during save"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-009",
+            "title": "Aktivitäten Manager Baseline Data",
+            "description": "As a financial advisor, I want to set my baseline activity levels so that the system can generate realistic monthly projections",
+            "acceptance_criteria": [
+              "Three subsections: Kundenbasis, Gebühren, Provisionen",
+              "Fields for existing customers, booked concepts, new customers",
+              "Fee inputs (service fee, concept fee, sponsoring fee)",
+              "Commission inputs (closing, service, insurance)",
+              "Additional provisions (real estate, utilities, telecom)",
+              "Data stored in Firestore rwProjections collection"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-010",
+            "title": "Monatliches Tracking Data Entry",
+            "description": "As a financial advisor, I want to enter my actual monthly performance so that I can track progress vs goals",
+            "acceptance_criteria": [
+              "Month/year selector with smart defaults (current month)",
+              "Load previous month data as starting point",
+              "Cumulative customer tracking (previous + new)",
+              "Real-time revenue calculation as data is entered",
+              "Last updated timestamp displayed",
+              "Audit trail maintained in Firestore",
+              "Validation prevents future-dated entries"
+            ],
+            "priority": "high"
+          }
+        ]
+      },
+      {
+        "id": "FR-004",
+        "title": "RW Tracking - Best Practice Projections",
+        "description": "Display Richtungswechsel best practice performance goals using Excel-based formulas and monthly percentage patterns. All fields are auto-calculated based on Aktivitäten Manager baseline data. Supports CSV export for planning sessions.",
+        "priority": "high",
+        "user_stories": [
+          {
+            "id": "ST-011",
+            "title": "Generate Monthly Projections",
+            "description": "As a financial advisor, I want to see 12-month projections based on RW best practices so that I understand performance goals",
+            "acceptance_criteria": [
+              "12-month projection table with 17 columns",
+              "Monthly percentage pattern (5%, 7%, 8%, 12%, etc.) applied",
+              "Columns: Mitgliederportal, Konzeptgespräche, Servicegebühr, etc.",
+              "All calculations match verified spreadsheet formulas",
+              "Projections update when baseline data changes",
+              "Read-only display (calculations only)"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-012",
+            "title": "Export RW Projections to CSV",
+            "description": "As a financial advisor, I want to export my projections so that I can use them in external tools or presentations",
+            "acceptance_criteria": [
+              "Export button generates CSV file",
+              "CSV includes all 17 columns",
+              "German column headers",
+              "File naming: RW_Projections_{advisor_name}_{date}.csv",
+              "Download initiates within 2 seconds",
+              "Firebase Function generates CSV server-side"
+            ],
+            "priority": "medium"
+          }
+        ]
+      },
+      {
+        "id": "FR-005",
+        "title": "IST Tracking - Actual vs Target Comparison",
+        "description": "Compare actual monthly performance (IST values) against RW best practice goals (RW Ziel) with color-coded performance indicators. Display side-by-side comparison table, monthly performance cards, and year-end analysis. This is a major enhancement not present in the original spreadsheet.",
+        "priority": "high",
+        "user_stories": [
+          {
+            "id": "ST-013",
+            "title": "Side-by-Side Performance Comparison",
+            "description": "As a financial advisor, I want to see my actual performance compared to RW targets so that I can identify coaching effectiveness",
+            "acceptance_criteria": [
+              "Comparison table with IST and RW Ziel columns",
+              "Performance percentage calculation for each month",
+              "Color-coded indicators: Green ≥100%, Yellow 80-99%, Red <80%",
+              "Monthly revenue totals displayed",
+              "Annual totals calculated and displayed",
+              "Real-time updates when actual data changes"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-014",
+            "title": "Monthly Performance Cards",
+            "description": "As a financial advisor, I want visual status cards for each month so that I can quickly see my performance at a glance",
+            "acceptance_criteria": [
+              "Grid of monthly performance cards",
+              "Visual indicators: ✅ (Green), ⚠️ (Yellow), ❌ (Red)",
+              "Key metrics summary per card",
+              "Performance percentage prominently displayed",
+              "Last updated timestamp on each card",
+              "Click card to view detailed breakdown"
+            ],
+            "priority": "medium"
+          },
+          {
+            "id": "ST-015",
+            "title": "Export IST Comparison Data",
+            "description": "As a financial advisor, I want to export comparison data so that I can share results with my coach",
+            "acceptance_criteria": [
+              "CSV export with IST vs RW columns",
+              "Performance percentage included",
+              "Year-end totals included",
+              "German column headers",
+              "File naming: IST_Comparison_{advisor_name}_{date}.csv"
+            ],
+            "priority": "low"
+          }
+        ]
+      },
+      {
+        "id": "FR-006",
+        "title": "Performance Analytics and Progress Visualization",
+        "description": "Visual analysis of coaching effectiveness with dual data source comparison (RW targets vs actual performance). Includes progress indicators, enhanced performance charts, cumulative tracking, and trend analysis. Another major MVP enhancement not in the original spreadsheet.",
+        "priority": "high",
+        "user_stories": [
+          {
+            "id": "ST-016",
+            "title": "Progress Indicators Toward Goals",
+            "description": "As a financial advisor, I want to see my current progress toward yearly goals so that I understand how far I've come",
+            "acceptance_criteria": [
+              "Progress bar showing % toward RW yearly goal",
+              "Trend indicator (positive/negative variance)",
+              "Current month vs target display",
+              "Visual status indicator",
+              "Real-time updates as actual data is entered"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-017",
+            "title": "Performance Comparison Charts",
+            "description": "As a financial advisor, I want to see charts comparing my actual performance to RW targets so that I can visualize coaching effectiveness",
+            "acceptance_criteria": [
+              "Dual-line chart: RW targets vs actual performance",
+              "Cumulative performance over time (area chart)",
+              "Monthly revenue comparison (bar chart)",
+              "Performance gap analysis visualization",
+              "German chart labels and legends",
+              "Charts responsive and mobile-friendly"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-018",
+            "title": "Coaching Effectiveness Metrics",
+            "description": "As a coaching company admin, I want to see coaching effectiveness metrics so that I can prove program value",
+            "acceptance_criteria": [
+              "Goal achievement percentage (actual vs RW)",
+              "Month-over-month growth comparison",
+              "Average performance across all metrics",
+              "Identification of strongest/weakest areas",
+              "ROI validation through actual results"
+            ],
+            "priority": "medium"
+          }
+        ]
+      },
+      {
+        "id": "FR-007",
+        "title": "Admin Dashboard and Organization Management",
+        "description": "Administrative interface for coaching companies to view aggregate performance across all financial advisors in their organization. Includes advisor management, comparative analysis, and organization-wide reporting.",
+        "priority": "high",
+        "user_stories": [
+          {
+            "id": "ST-019",
+            "title": "View All Advisors in Organization",
+            "description": "As a coaching company admin, I want to see a list of all advisors so that I can monitor overall program performance",
+            "acceptance_criteria": [
+              "Dashboard displaying all advisors in organization",
+              "Quick stats per advisor: current ROI, performance %, last activity",
+              "Search and filter functionality",
+              "Sort by various metrics (ROI, performance, name, join date)",
+              "Click advisor to view detailed data",
+              "Real-time updates when advisor data changes"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-020",
+            "title": "Aggregate Performance Metrics",
+            "description": "As a coaching company admin, I want to see aggregate metrics across all advisors so that I can assess program effectiveness",
+            "acceptance_criteria": [
+              "Average ROI across all advisors",
+              "Average performance percentage (vs RW targets)",
+              "Total revenue impact generated",
+              "Coaching effectiveness score",
+              "Number of active advisors",
+              "Visual charts for aggregate data"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-021",
+            "title": "Invite and Manage Advisors",
+            "description": "As a coaching company admin, I want to invite new advisors and manage existing ones so that I can control access to the platform",
+            "acceptance_criteria": [
+              "Send email invitation with unique signup link",
+              "Deactivate advisor accounts",
+              "Reactivate advisor accounts",
+              "Transfer advisor to different organization",
+              "View advisor activity log",
+              "Bulk invitation support"
+            ],
+            "priority": "medium"
+          },
+          {
+            "id": "ST-022",
+            "title": "Export Organization-Wide Reports",
+            "description": "As a coaching company admin, I want to export reports for all advisors so that I can analyze data externally",
+            "acceptance_criteria": [
+              "CSV export of all advisors' data",
+              "PDF report generation (future)",
+              "Cohort analysis by join date",
+              "Benchmark comparisons",
+              "Custom date range selection",
+              "Scheduled report generation (future)"
+            ],
+            "priority": "low"
+          }
+        ]
+      },
+      {
+        "id": "FR-008",
+        "title": "Firebase Backend and Data Persistence",
+        "description": "Complete backend infrastructure using Firebase services including Firestore for data storage, Cloud Functions for calculations and business logic, and Firebase Storage for CSV exports. Implements security rules for role-based access control.",
+        "priority": "high",
+        "user_stories": [
+          {
+            "id": "ST-023",
+            "title": "Cloud-Based Data Storage",
+            "description": "As a user, I want my data stored securely in the cloud so that I can access it from any device",
+            "acceptance_criteria": [
+              "Firestore collections for all data types",
+              "German field names in database schema",
+              "Real-time synchronization across devices",
+              "Data persists across sessions",
+              "Automatic backups configured",
+              "99.9% uptime guarantee"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-024",
+            "title": "Server-Side Calculation Functions",
+            "description": "As a system, I want calculations performed server-side so that business logic cannot be tampered with",
+            "acceptance_criteria": [
+              "Firebase Functions for ROI calculations",
+              "RW projection generation function",
+              "Performance comparison calculation function",
+              "CSV export generation function",
+              "Input validation on server-side",
+              "Rate limiting on function calls"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-025",
+            "title": "Firestore Security Rules",
+            "description": "As a system, I want strict security rules so that users can only access authorized data",
+            "acceptance_criteria": [
+              "Users read/write only their own data",
+              "Admins read all data in their organization",
+              "Admins cannot access other organizations",
+              "Write operations validated for data integrity",
+              "Security rules tested and validated",
+              "Audit logging enabled"
+            ],
+            "priority": "high"
+          }
+        ]
+      },
+      {
+        "id": "FR-009",
+        "title": "German Language Support Throughout Application",
+        "description": "Complete German localization of all UI elements, labels, field names, error messages, and help text. Preserves exact German terminology from the verified MVP and spreadsheet to maintain authenticity.",
+        "priority": "high",
+        "user_stories": [
+          {
+            "id": "ST-026",
+            "title": "German UI Labels and Navigation",
+            "description": "As a German-speaking user, I want all UI elements in German so that I can use the application naturally",
+            "acceptance_criteria": [
+              "All page names in German (Analyse, Eingaben, RW Tracking, etc.)",
+              "All button labels in German (Speichern, Exportieren, etc.)",
+              "All chart labels and legends in German",
+              "All table headers in German",
+              "Navigation menu in German",
+              "Help text and tooltips in German"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-027",
+            "title": "German Field Names and Database Schema",
+            "description": "As a developer, I want database field names in German so that the code matches the UI terminology",
+            "acceptance_criteria": [
+              "Firestore collections use German field names",
+              "TypeScript interfaces use German property names",
+              "Firebase Functions use German variable names",
+              "Documentation references German terminology",
+              "Code comments explain German terms"
+            ],
+            "priority": "high"
+          },
+          {
+            "id": "ST-028",
+            "title": "German Error Messages and Validation",
+            "description": "As a user, I want error messages in German so that I can understand what went wrong",
+            "acceptance_criteria": [
+              "All validation error messages in German",
+              "All system error messages in German",
+              "Form validation feedback in German",
+              "Success/confirmation messages in German",
+              "Loading states and progress indicators in German"
+            ],
+            "priority": "medium"
+          }
+        ]
+      },
+      {
+        "id": "FR-010",
+        "title": "Custom Formula Editor",
+        "description": "Advanced feature allowing users to customize calculation formulas for each KPI. Uses JavaScript expressions with variable references. Formulas are saved per-user and applied to their calculations. This is an MVP enhancement not in the original spreadsheet.",
+        "priority": "low",
+        "user_stories": [
+          {
+            "id": "ST-029",
+            "title": "Edit KPI Calculation Formulas",
+            "description": "As an advanced user, I want to customize calculation formulas so that I can adapt the tool to my specific needs",
+            "acceptance_criteria": [
+              "Formula editor for each KPI",
+              "Syntax highlighting for JavaScript expressions",
+              "Variable reference documentation",
+              "Formula validation before save",
+              "Revert to default formula option",
+              "Formula saved to user profile"
+            ],
+            "priority": "low"
+          },
+          {
+            "id": "ST-030",
+            "title": "Preview Formula Results",
+            "description": "As a user, I want to preview formula results before saving so that I can ensure they work correctly",
+            "acceptance_criteria": [
+              "Real-time formula preview with test data",
+              "Display calculated result",
+              "Error highlighting for invalid formulas",
+              "Side-by-side comparison with default formula",
+              "Test with sample data sets"
+            ],
+            "priority": "low"
+          }
+        ]
+      }
+    ],
+    "technical_requirements": {
+      "performance": {
+        "page_load_time": "< 2 seconds (initial load)",
+        "calculation_response_time": "< 500ms",
+        "real_time_updates_latency": "< 1 second",
+        "concurrent_users": "100+ simultaneous users",
+        "database_query_optimization": "Firestore indexes for all queries",
+        "caching_strategy": "Client-side caching for static data, server-side for calculations"
+      },
+      "security": {
+        "authentication": "Clerk with email/password and social login",
+        "authorization": "Role-based access control (RBAC) with admin/user roles",
+        "data_encryption": "TLS 1.3 for transport, Firestore encryption at rest",
+        "input_validation": "Client-side and server-side validation for all inputs",
+        "rate_limiting": "Firebase Functions rate limiting per user",
+        "xss_prevention": "React auto-escaping and Content Security Policy",
+        "csrf_protection": "NextJS built-in CSRF protection",
+        "firestore_security_rules": "Strict rules enforcing data isolation by userId and organizationId"
+      },
+      "scalability": {
+        "database": "Firestore auto-scaling up to 10,000 advisors",
+        "functions": "Firebase Functions auto-scaling",
+        "storage": "Firebase Storage for CSV exports with CDN",
+        "monitoring": "Firebase Analytics and Performance Monitoring",
+        "error_tracking": "Sentry integration for error reporting"
+      },
+      "compatibility": {
+        "browsers": "Chrome, Firefox, Safari, Edge (latest 2 versions)",
+        "mobile_devices": "iOS 14+, Android 10+",
+        "screen_sizes": "320px (mobile) to 4K (desktop)",
+        "responsive_design": "Mobile-first approach with Tailwind CSS",
+        "accessibility": "WCAG 2.1 Level AA compliance"
+      }
+    },
+    "dependencies": [
+      "Clerk (authentication service) - Free tier supports up to 10,000 users",
+      "Firebase Project (Blaze plan for Functions and Storage)",
+      "Vercel account for frontend hosting",
+      "Node.js 18+ for development",
+      "TypeScript 5+ for type safety",
+      "React 18 and NextJS 14 (App Router)",
+      "Chart.js 4+ for data visualizations",
+      "Tailwind CSS 3+ for styling",
+      "Existing MVP at /Users/hermannrohr/Documents/Richtungswechsel Documents/roi-final.html",
+      "Spreadsheet reference at /Users/hermannrohr/Documents/Onur/Richtungswechsel_ROI_Template.xlsx"
+    ],
+    "assumptions": [
+      "Users have stable internet connection (cloud-based application)",
+      "Users will manually input monthly actual data (no automated data feeds initially)",
+      "MVP calculation formulas are correct and validated by client",
+      "Monthly percentage patterns (5%, 7%, 8%, 12%, etc.) remain constant for RW best practices",
+      "Coaching program pricing is stable: €9,520 one-time + €2,083/month (or €1,785/month - to be confirmed)",
+      "All advisors initially belong to one organization (multi-tenant expansion in Phase 2)",
+      "German is the only required language (internationalization is future consideration)",
+      "CSV export is sufficient for data backup (PDF reports in Phase 2)",
+      "Clerk free tier is sufficient for initial launch (10,000 users limit)",
+      "Firebase Blaze plan costs are acceptable for expected usage",
+      "Vercel free tier is sufficient for frontend hosting initially"
+    ],
+    "constraints": [
+      "Must preserve all MVP functionality - no features can be lost",
+      "Must use exact German field names from MVP and spreadsheet",
+      "Must replicate all calculation formulas exactly as verified in spreadsheet analysis",
+      "Must maintain MVP's dark blue (#003f5c) and yellow (#ffb600) color scheme",
+      "Must support mobile devices (responsive design required)",
+      "Budget constraint: Use free tiers where possible for initial launch",
+      "Timeline constraint: Target 3-4 month development timeline",
+      "Technology constraint: Must use NextJS 14 (App Router), Firebase, and Clerk as specified",
+      "Data residency: Must comply with German/EU data protection laws (GDPR)",
+      "No offline functionality in MVP (cloud-dependent)",
+      "Single currency support (EUR) only",
+      "No automated data imports from external systems in MVP",
+      "Custom formula editor is low priority (can be deferred to Phase 2)"
+    ]
+  }
+}

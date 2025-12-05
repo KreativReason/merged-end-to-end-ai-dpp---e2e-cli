@@ -1,0 +1,1101 @@
+{
+  "artifact_type": "flow",
+  "status": "complete",
+  "validation": "passed",
+  "approval_required": true,
+  "approvers": ["Cynthia", "Hassan"],
+  "next_phase": "erd_design",
+  "data": {
+    "project_name": "Richtungswechsel ROI Tracker - SaaS Migration",
+    "version": "1.0.0",
+    "created_at": "2025-10-15T00:00:00Z",
+    "user_flows": [
+      {
+        "id": "FLOW-001",
+        "name": "User Sign-up and Onboarding",
+        "description": "Financial advisor creates account and completes onboarding wizard",
+        "feature_id": "FR-001",
+        "story_ids": ["ST-001"],
+        "actor": "user",
+        "trigger": "User clicks 'Get Started' on landing page",
+        "steps": [
+          {
+            "id": "STEP-001",
+            "sequence": 1,
+            "action": "Navigate to landing page",
+            "actor": "user",
+            "inputs": [],
+            "outputs": ["Landing page displayed"],
+            "conditions": [],
+            "next_steps": ["STEP-002"]
+          },
+          {
+            "id": "STEP-002",
+            "sequence": 2,
+            "action": "Click 'Get Started' button",
+            "actor": "user",
+            "inputs": ["User intention to sign up"],
+            "outputs": ["Clerk sign-up modal opens"],
+            "conditions": [],
+            "next_steps": ["STEP-003"]
+          },
+          {
+            "id": "STEP-003",
+            "sequence": 3,
+            "action": "Select role (Financial Advisor or Coaching Company)",
+            "actor": "user",
+            "inputs": ["Role selection"],
+            "outputs": ["Role metadata set in Clerk"],
+            "conditions": [],
+            "next_steps": ["STEP-004"]
+          },
+          {
+            "id": "STEP-004",
+            "sequence": 4,
+            "action": "Enter email and password or use social login",
+            "actor": "user",
+            "inputs": ["Email", "Password or OAuth token"],
+            "outputs": ["Account created in Clerk"],
+            "conditions": ["Valid email format", "Password meets requirements"],
+            "next_steps": ["STEP-005"]
+          },
+          {
+            "id": "STEP-005",
+            "sequence": 5,
+            "action": "Verify email address",
+            "actor": "user",
+            "inputs": ["Verification code from email"],
+            "outputs": ["Email verified"],
+            "conditions": ["Valid verification code"],
+            "next_steps": ["STEP-006"]
+          },
+          {
+            "id": "STEP-006",
+            "sequence": 6,
+            "action": "Redirect to onboarding wizard",
+            "actor": "system",
+            "inputs": ["Verified user session"],
+            "outputs": ["Onboarding wizard displayed"],
+            "conditions": [],
+            "next_steps": ["STEP-007"]
+          },
+          {
+            "id": "STEP-007",
+            "sequence": 7,
+            "action": "Enter baseline data (company name, starting customer count)",
+            "actor": "user",
+            "inputs": ["Company name", "Initial customer count", "Initial revenue"],
+            "outputs": ["User profile created in Firestore"],
+            "conditions": [],
+            "next_steps": ["STEP-008"]
+          },
+          {
+            "id": "STEP-008",
+            "sequence": 8,
+            "action": "Redirect to role-appropriate dashboard",
+            "actor": "system",
+            "inputs": ["User role"],
+            "outputs": ["Advisor: Analyse page", "Admin: Admin dashboard"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "success_criteria": [
+          "User account created in Clerk",
+          "Email verified",
+          "User profile created in Firestore with role",
+          "Baseline data saved",
+          "User redirected to appropriate dashboard"
+        ],
+        "error_handling": [
+          "Invalid email: Display validation error",
+          "Weak password: Display strength requirements",
+          "Email already exists: Redirect to login",
+          "Verification timeout: Resend verification email",
+          "Network error: Retry with exponential backoff"
+        ]
+      },
+      {
+        "id": "FLOW-002",
+        "name": "User Login",
+        "description": "Registered user authenticates and accesses their dashboard",
+        "feature_id": "FR-001",
+        "story_ids": ["ST-002"],
+        "actor": "user",
+        "trigger": "User clicks 'Login' button",
+        "steps": [
+          {
+            "id": "STEP-009",
+            "sequence": 1,
+            "action": "Navigate to login page",
+            "actor": "user",
+            "inputs": [],
+            "outputs": ["Clerk login modal displayed"],
+            "conditions": [],
+            "next_steps": ["STEP-010"]
+          },
+          {
+            "id": "STEP-010",
+            "sequence": 2,
+            "action": "Enter credentials (email/password or social login)",
+            "actor": "user",
+            "inputs": ["Email", "Password or OAuth"],
+            "outputs": ["Authentication request sent"],
+            "conditions": [],
+            "next_steps": ["STEP-011"]
+          },
+          {
+            "id": "STEP-011",
+            "sequence": 3,
+            "action": "Validate credentials",
+            "actor": "system",
+            "inputs": ["User credentials"],
+            "outputs": ["Session token created"],
+            "conditions": ["Valid credentials", "Email verified"],
+            "next_steps": ["STEP-012"]
+          },
+          {
+            "id": "STEP-012",
+            "sequence": 4,
+            "action": "Fetch user role from Firestore",
+            "actor": "system",
+            "inputs": ["User ID"],
+            "outputs": ["User role (admin/user)"],
+            "conditions": [],
+            "next_steps": ["STEP-013"]
+          },
+          {
+            "id": "STEP-013",
+            "sequence": 5,
+            "action": "Redirect to role-appropriate dashboard",
+            "actor": "system",
+            "inputs": ["User role"],
+            "outputs": ["Dashboard page loaded"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "success_criteria": [
+          "User authenticated successfully",
+          "Session created and persisted",
+          "User redirected to correct dashboard based on role"
+        ],
+        "error_handling": [
+          "Invalid credentials: Display error message",
+          "Account locked (rate limiting): Display lockout duration",
+          "Email not verified: Prompt to verify",
+          "Network error: Retry"
+        ]
+      },
+      {
+        "id": "FLOW-003",
+        "name": "ROI Data Input and Calculation",
+        "description": "User inputs financial data and views ROI calculations with scenarios",
+        "feature_id": "FR-002",
+        "story_ids": ["ST-004", "ST-005", "ST-006"],
+        "actor": "user",
+        "trigger": "User navigates to Analyse page",
+        "steps": [
+          {
+            "id": "STEP-014",
+            "sequence": 1,
+            "action": "Load existing ROI data from Firestore",
+            "actor": "system",
+            "inputs": ["User ID"],
+            "outputs": ["ROI input fields populated"],
+            "conditions": [],
+            "next_steps": ["STEP-015"]
+          },
+          {
+            "id": "STEP-015",
+            "sequence": 2,
+            "action": "Edit input fields (revenue, costs, investment, passive income)",
+            "actor": "user",
+            "inputs": ["Financial data"],
+            "outputs": ["Updated values"],
+            "conditions": ["Valid numerical inputs"],
+            "next_steps": ["STEP-016"]
+          },
+          {
+            "id": "STEP-016",
+            "sequence": 3,
+            "action": "Auto-save to Firestore on field blur",
+            "actor": "system",
+            "inputs": ["Updated field value", "User ID"],
+            "outputs": ["Data saved to roiInputs collection"],
+            "conditions": [],
+            "next_steps": ["STEP-017"]
+          },
+          {
+            "id": "STEP-017",
+            "sequence": 4,
+            "action": "Select scenario (Konservativ 50%, Realistisch 70%, Optimistisch 100%)",
+            "actor": "user",
+            "inputs": ["Scenario selection"],
+            "outputs": ["Scenario percentage applied"],
+            "conditions": [],
+            "next_steps": ["STEP-018"]
+          },
+          {
+            "id": "STEP-018",
+            "sequence": 5,
+            "action": "Call Firebase Function to calculate ROI metrics",
+            "actor": "system",
+            "inputs": ["ROI inputs", "Scenario percentage"],
+            "outputs": ["Net value", "ROI percentage", "Payback period"],
+            "conditions": [],
+            "next_steps": ["STEP-019"]
+          },
+          {
+            "id": "STEP-019",
+            "sequence": 6,
+            "action": "Display calculated KPIs and update charts",
+            "actor": "system",
+            "inputs": ["Calculated metrics"],
+            "outputs": ["KPI cards updated", "Charts rendered"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "success_criteria": [
+          "All input fields populated and validated",
+          "Data auto-saved to Firestore",
+          "ROI calculations completed within 500ms",
+          "KPIs displayed correctly",
+          "Charts render with German labels"
+        ],
+        "error_handling": [
+          "Invalid input: Display validation message",
+          "Calculation error: Log and display generic error",
+          "Save failure: Retry with exponential backoff",
+          "Chart render failure: Display fallback message"
+        ]
+      },
+      {
+        "id": "FLOW-004",
+        "name": "RW Tracking Projection Viewing",
+        "description": "User views 12-month best practice projections based on their baseline data",
+        "feature_id": "FR-004",
+        "story_ids": ["ST-011"],
+        "actor": "user",
+        "trigger": "User navigates to RW Tracking page",
+        "steps": [
+          {
+            "id": "STEP-020",
+            "sequence": 1,
+            "action": "Load baseline data from Aktivitäten Manager",
+            "actor": "system",
+            "inputs": ["User ID"],
+            "outputs": ["Baseline customer count", "Fee rates", "Commission rates"],
+            "conditions": [],
+            "next_steps": ["STEP-021"]
+          },
+          {
+            "id": "STEP-021",
+            "sequence": 2,
+            "action": "Apply monthly percentage pattern (5%, 7%, 8%, 12%, etc.)",
+            "actor": "system",
+            "inputs": ["Baseline data", "Monthly percentages"],
+            "outputs": ["12 months of projected data"],
+            "conditions": [],
+            "next_steps": ["STEP-022"]
+          },
+          {
+            "id": "STEP-022",
+            "sequence": 3,
+            "action": "Calculate all 17 columns (service fees, concept fees, provisions)",
+            "actor": "system",
+            "inputs": ["Projected member counts", "Fee rates"],
+            "outputs": ["Complete 17-column projection table"],
+            "conditions": [],
+            "next_steps": ["STEP-023"]
+          },
+          {
+            "id": "STEP-023",
+            "sequence": 4,
+            "action": "Display projection table with German labels",
+            "actor": "system",
+            "inputs": ["Projection data"],
+            "outputs": ["Read-only table rendered"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "success_criteria": [
+          "Projections generated from baseline data",
+          "All 17 columns calculated correctly",
+          "Monthly percentage pattern applied",
+          "Table displays with German labels",
+          "Read-only fields enforced"
+        ],
+        "error_handling": [
+          "Missing baseline data: Prompt to complete Aktivitäten Manager",
+          "Calculation error: Log and display error",
+          "Render failure: Display fallback message"
+        ]
+      },
+      {
+        "id": "FLOW-005",
+        "name": "Monthly Actual Data Entry",
+        "description": "User enters actual monthly performance for IST tracking",
+        "feature_id": "FR-003",
+        "story_ids": ["ST-010"],
+        "actor": "user",
+        "trigger": "User navigates to Eingaben > Monatliches Tracking tab",
+        "steps": [
+          {
+            "id": "STEP-024",
+            "sequence": 1,
+            "action": "Select month and year",
+            "actor": "user",
+            "inputs": ["Month", "Year"],
+            "outputs": ["Month selection"],
+            "conditions": ["Cannot select future dates"],
+            "next_steps": ["STEP-025"]
+          },
+          {
+            "id": "STEP-025",
+            "sequence": 2,
+            "action": "Load previous month data (if exists)",
+            "actor": "system",
+            "inputs": ["User ID", "Previous month key"],
+            "outputs": ["Cumulative customer count from previous month"],
+            "conditions": [],
+            "next_steps": ["STEP-026"]
+          },
+          {
+            "id": "STEP-026",
+            "sequence": 3,
+            "action": "Pre-fill existing customers field with cumulative value",
+            "actor": "system",
+            "inputs": ["Previous month customers"],
+            "outputs": ["Field populated"],
+            "conditions": [],
+            "next_steps": ["STEP-027"]
+          },
+          {
+            "id": "STEP-027",
+            "sequence": 4,
+            "action": "Enter actual performance data (new customers, concepts, etc.)",
+            "actor": "user",
+            "inputs": ["New customers", "Booked concepts", "Closed concepts", "Sponsoring"],
+            "outputs": ["Actual data entered"],
+            "conditions": ["Valid numerical inputs"],
+            "next_steps": ["STEP-028"]
+          },
+          {
+            "id": "STEP-028",
+            "sequence": 5,
+            "action": "Calculate real-time revenue as data is entered",
+            "actor": "system",
+            "inputs": ["Actual data", "Fee rates"],
+            "outputs": ["Total revenue calculated"],
+            "conditions": [],
+            "next_steps": ["STEP-029"]
+          },
+          {
+            "id": "STEP-029",
+            "sequence": 6,
+            "action": "Save to Firestore monthlyActuals collection",
+            "actor": "system",
+            "inputs": ["Month key", "Actual data", "Calculated revenue", "User ID"],
+            "outputs": ["Data saved with timestamp"],
+            "conditions": [],
+            "next_steps": ["STEP-030"]
+          },
+          {
+            "id": "STEP-030",
+            "sequence": 7,
+            "action": "Display success message and last updated timestamp",
+            "actor": "system",
+            "inputs": ["Save timestamp"],
+            "outputs": ["Success feedback"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "success_criteria": [
+          "Month selector works correctly",
+          "Previous month data loaded for cumulative tracking",
+          "Real-time revenue calculation",
+          "Data saved to Firestore with audit trail",
+          "Timestamp displayed"
+        ],
+        "error_handling": [
+          "Future date selection: Block and display message",
+          "Invalid input: Display validation error",
+          "Save failure: Retry and display error",
+          "Network error: Queue for retry"
+        ]
+      },
+      {
+        "id": "FLOW-006",
+        "name": "IST vs RW Performance Comparison",
+        "description": "User views side-by-side comparison of actual performance vs RW targets",
+        "feature_id": "FR-005",
+        "story_ids": ["ST-013", "ST-014"],
+        "actor": "user",
+        "trigger": "User navigates to IST Tracking page",
+        "steps": [
+          {
+            "id": "STEP-031",
+            "sequence": 1,
+            "action": "Load RW projections from rwProjections collection",
+            "actor": "system",
+            "inputs": ["User ID"],
+            "outputs": ["12 months of RW target data"],
+            "conditions": [],
+            "next_steps": ["STEP-032"]
+          },
+          {
+            "id": "STEP-032",
+            "sequence": 2,
+            "action": "Load IST actual data from monthlyActuals collection",
+            "actor": "system",
+            "inputs": ["User ID"],
+            "outputs": ["Entered actual performance data"],
+            "conditions": [],
+            "next_steps": ["STEP-033"]
+          },
+          {
+            "id": "STEP-033",
+            "sequence": 3,
+            "action": "Calculate performance percentage for each month (IST / RW * 100)",
+            "actor": "system",
+            "inputs": ["IST values", "RW values"],
+            "outputs": ["Performance percentages"],
+            "conditions": [],
+            "next_steps": ["STEP-034"]
+          },
+          {
+            "id": "STEP-034",
+            "sequence": 4,
+            "action": "Apply color coding (Green ≥100%, Yellow 80-99%, Red <80%)",
+            "actor": "system",
+            "inputs": ["Performance percentages"],
+            "outputs": ["Color-coded indicators"],
+            "conditions": [],
+            "next_steps": ["STEP-035"]
+          },
+          {
+            "id": "STEP-035",
+            "sequence": 5,
+            "action": "Render comparison table and performance cards",
+            "actor": "system",
+            "inputs": ["IST data", "RW data", "Performance percentages", "Color codes"],
+            "outputs": ["Comparison table", "Monthly cards with visual indicators"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "success_criteria": [
+          "Both IST and RW data loaded",
+          "Performance percentages calculated correctly",
+          "Color coding applied properly",
+          "Table renders with German labels",
+          "Performance cards display visual indicators (✅ ❌ ⚠️)"
+        ],
+        "error_handling": [
+          "Missing RW data: Prompt to complete baseline",
+          "Missing IST data: Display message to enter actuals",
+          "Calculation error: Log and display fallback",
+          "Render failure: Display error message"
+        ]
+      },
+      {
+        "id": "FLOW-007",
+        "name": "Performance Analytics and Charts",
+        "description": "User views progress indicators and performance charts comparing actual vs targets",
+        "feature_id": "FR-006",
+        "story_ids": ["ST-016", "ST-017"],
+        "actor": "user",
+        "trigger": "User navigates to Performance page",
+        "steps": [
+          {
+            "id": "STEP-036",
+            "sequence": 1,
+            "action": "Load IST and RW data for the year",
+            "actor": "system",
+            "inputs": ["User ID"],
+            "outputs": ["Full year data"],
+            "conditions": [],
+            "next_steps": ["STEP-037"]
+          },
+          {
+            "id": "STEP-037",
+            "sequence": 2,
+            "action": "Calculate progress toward yearly RW goal",
+            "actor": "system",
+            "inputs": ["YTD IST total", "Yearly RW target"],
+            "outputs": ["Progress percentage"],
+            "conditions": [],
+            "next_steps": ["STEP-038"]
+          },
+          {
+            "id": "STEP-038",
+            "sequence": 3,
+            "action": "Calculate trend analysis (positive/negative variance)",
+            "actor": "system",
+            "inputs": ["Month-over-month IST data"],
+            "outputs": ["Trend direction and magnitude"],
+            "conditions": [],
+            "next_steps": ["STEP-039"]
+          },
+          {
+            "id": "STEP-039",
+            "sequence": 4,
+            "action": "Render progress indicators",
+            "actor": "system",
+            "inputs": ["Progress percentage", "Trend data"],
+            "outputs": ["Progress bar", "Trend indicator", "Status icon"],
+            "conditions": [],
+            "next_steps": ["STEP-040"]
+          },
+          {
+            "id": "STEP-040",
+            "sequence": 5,
+            "action": "Generate chart data (dual-line, cumulative, gap analysis)",
+            "actor": "system",
+            "inputs": ["IST data", "RW data"],
+            "outputs": ["Chart datasets with German labels"],
+            "conditions": [],
+            "next_steps": ["STEP-041"]
+          },
+          {
+            "id": "STEP-041",
+            "sequence": 6,
+            "action": "Render Chart.js visualizations",
+            "actor": "system",
+            "inputs": ["Chart datasets"],
+            "outputs": ["Dual-line chart", "Cumulative area chart", "Gap analysis chart"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "success_criteria": [
+          "Progress percentage calculated correctly",
+          "Trend analysis shows direction",
+          "All charts render with German labels",
+          "Charts are responsive",
+          "Real-time updates when data changes"
+        ],
+        "error_handling": [
+          "Insufficient data: Display message",
+          "Calculation error: Log and show fallback",
+          "Chart render failure: Display error",
+          "Performance issues: Implement data pagination"
+        ]
+      },
+      {
+        "id": "FLOW-008",
+        "name": "Admin Dashboard - View All Advisors",
+        "description": "Admin views list of all advisors with summary metrics",
+        "feature_id": "FR-007",
+        "story_ids": ["ST-019", "ST-020"],
+        "actor": "admin",
+        "trigger": "Admin logs in or navigates to Admin Dashboard",
+        "steps": [
+          {
+            "id": "STEP-042",
+            "sequence": 1,
+            "action": "Verify admin role",
+            "actor": "system",
+            "inputs": ["User ID"],
+            "outputs": ["Role verified"],
+            "conditions": ["User role === 'admin'"],
+            "next_steps": ["STEP-043"]
+          },
+          {
+            "id": "STEP-043",
+            "sequence": 2,
+            "action": "Load all advisors in organization from Firestore",
+            "actor": "system",
+            "inputs": ["Organization ID"],
+            "outputs": ["List of advisors"],
+            "conditions": [],
+            "next_steps": ["STEP-044"]
+          },
+          {
+            "id": "STEP-044",
+            "sequence": 3,
+            "action": "For each advisor, calculate summary metrics (ROI, performance %, last activity)",
+            "actor": "system",
+            "inputs": ["Advisor data"],
+            "outputs": ["Summary metrics per advisor"],
+            "conditions": [],
+            "next_steps": ["STEP-045"]
+          },
+          {
+            "id": "STEP-045",
+            "sequence": 4,
+            "action": "Calculate aggregate metrics (avg ROI, avg performance, total impact)",
+            "actor": "system",
+            "inputs": ["All advisor metrics"],
+            "outputs": ["Organization-wide metrics"],
+            "conditions": [],
+            "next_steps": ["STEP-046"]
+          },
+          {
+            "id": "STEP-046",
+            "sequence": 5,
+            "action": "Render admin dashboard with advisor list and aggregate metrics",
+            "actor": "system",
+            "inputs": ["Advisor summaries", "Aggregate metrics"],
+            "outputs": ["Dashboard displayed"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "success_criteria": [
+          "Only admins can access",
+          "All advisors in organization loaded",
+          "Summary metrics calculated correctly",
+          "Aggregate metrics displayed",
+          "Search and filter work"
+        ],
+        "error_handling": [
+          "Non-admin access: 403 Forbidden",
+          "No advisors: Display empty state",
+          "Calculation error: Show partial data with warning",
+          "Load failure: Retry and display error"
+        ]
+      },
+      {
+        "id": "FLOW-009",
+        "name": "Data Export (CSV)",
+        "description": "User exports their data to CSV format",
+        "feature_id": "FR-004",
+        "story_ids": ["ST-012", "ST-015"],
+        "actor": "user",
+        "trigger": "User clicks Export button on any page",
+        "steps": [
+          {
+            "id": "STEP-047",
+            "sequence": 1,
+            "action": "Click Export button",
+            "actor": "user",
+            "inputs": ["Export type (RW, IST, Performance)"],
+            "outputs": ["Export request"],
+            "conditions": [],
+            "next_steps": ["STEP-048"]
+          },
+          {
+            "id": "STEP-048",
+            "sequence": 2,
+            "action": "Call Firebase Function to generate CSV",
+            "actor": "system",
+            "inputs": ["User ID", "Export type"],
+            "outputs": ["CSV file generated"],
+            "conditions": [],
+            "next_steps": ["STEP-049"]
+          },
+          {
+            "id": "STEP-049",
+            "sequence": 3,
+            "action": "Save CSV to Firebase Storage",
+            "actor": "system",
+            "inputs": ["CSV data"],
+            "outputs": ["Storage URL"],
+            "conditions": [],
+            "next_steps": ["STEP-050"]
+          },
+          {
+            "id": "STEP-050",
+            "sequence": 4,
+            "action": "Return download link to client",
+            "actor": "system",
+            "inputs": ["Storage URL"],
+            "outputs": ["Download link"],
+            "conditions": [],
+            "next_steps": ["STEP-051"]
+          },
+          {
+            "id": "STEP-051",
+            "sequence": 5,
+            "action": "Initiate browser download",
+            "actor": "system",
+            "inputs": ["Download link"],
+            "outputs": ["CSV file downloaded"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "success_criteria": [
+          "CSV generated within 2 seconds",
+          "German column headers",
+          "All data included",
+          "Proper file naming",
+          "Download succeeds"
+        ],
+        "error_handling": [
+          "Generation error: Display error message",
+          "Storage failure: Retry and notify user",
+          "Download blocked: Display instructions",
+          "Timeout: Cancel and notify"
+        ]
+      },
+      {
+        "id": "FLOW-010",
+        "name": "Custom Formula Editing",
+        "description": "Advanced users customize KPI calculation formulas",
+        "feature_id": "FR-010",
+        "story_ids": ["ST-029", "ST-030"],
+        "actor": "user",
+        "trigger": "User opens formula editor from page settings",
+        "steps": [
+          {
+            "id": "STEP-052",
+            "sequence": 1,
+            "action": "Click formula editor icon",
+            "actor": "user",
+            "inputs": [],
+            "outputs": ["Formula editor modal opens"],
+            "conditions": [],
+            "next_steps": ["STEP-053"]
+          },
+          {
+            "id": "STEP-053",
+            "sequence": 2,
+            "action": "Display current formula with syntax highlighting",
+            "actor": "system",
+            "inputs": ["Current formula from user profile"],
+            "outputs": ["Formula displayed in editor"],
+            "conditions": [],
+            "next_steps": ["STEP-054"]
+          },
+          {
+            "id": "STEP-054",
+            "sequence": 3,
+            "action": "Edit formula with available variables",
+            "actor": "user",
+            "inputs": ["Modified formula"],
+            "outputs": ["Updated formula text"],
+            "conditions": [],
+            "next_steps": ["STEP-055"]
+          },
+          {
+            "id": "STEP-055",
+            "sequence": 4,
+            "action": "Validate formula syntax",
+            "actor": "system",
+            "inputs": ["Formula text"],
+            "outputs": ["Validation result"],
+            "conditions": ["Valid JavaScript expression"],
+            "next_steps": ["STEP-056"]
+          },
+          {
+            "id": "STEP-056",
+            "sequence": 5,
+            "action": "Preview calculated result with test data",
+            "actor": "system",
+            "inputs": ["Formula", "Test data"],
+            "outputs": ["Preview result"],
+            "conditions": [],
+            "next_steps": ["STEP-057"]
+          },
+          {
+            "id": "STEP-057",
+            "sequence": 6,
+            "action": "Save formula to user profile",
+            "actor": "system",
+            "inputs": ["Validated formula", "User ID"],
+            "outputs": ["Formula saved"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "success_criteria": [
+          "Formula editor displays correctly",
+          "Syntax validation works",
+          "Preview shows correct results",
+          "Formula saved to user profile",
+          "Applied to subsequent calculations"
+        ],
+        "error_handling": [
+          "Invalid syntax: Highlight error and show message",
+          "Runtime error in preview: Display error",
+          "Save failure: Retry and notify",
+          "Revert to default option available"
+        ]
+      }
+    ],
+    "system_flows": [
+      {
+        "id": "SFLOW-001",
+        "name": "Authentication Middleware",
+        "description": "NextJS middleware validates authentication and enforces role-based access",
+        "components": ["NextJS Middleware", "Clerk SDK", "Firestore"],
+        "steps": [
+          {
+            "id": "STEP-058",
+            "sequence": 1,
+            "action": "Intercept incoming request",
+            "actor": "system",
+            "inputs": ["HTTP request"],
+            "outputs": ["Request intercepted"],
+            "conditions": [],
+            "next_steps": ["STEP-059"]
+          },
+          {
+            "id": "STEP-059",
+            "sequence": 2,
+            "action": "Validate Clerk session token",
+            "actor": "system",
+            "inputs": ["Session token from cookie"],
+            "outputs": ["User ID if valid"],
+            "conditions": ["Valid token", "Not expired"],
+            "next_steps": ["STEP-060"]
+          },
+          {
+            "id": "STEP-060",
+            "sequence": 3,
+            "action": "Fetch user role from Firestore",
+            "actor": "system",
+            "inputs": ["User ID"],
+            "outputs": ["User role (admin/user)"],
+            "conditions": [],
+            "next_steps": ["STEP-061"]
+          },
+          {
+            "id": "STEP-061",
+            "sequence": 4,
+            "action": "Check if route requires specific role",
+            "actor": "system",
+            "inputs": ["Requested route", "User role"],
+            "outputs": ["Access decision"],
+            "conditions": ["Route rules matched"],
+            "next_steps": ["STEP-062"]
+          },
+          {
+            "id": "STEP-062",
+            "sequence": 5,
+            "action": "Allow or deny request",
+            "actor": "system",
+            "inputs": ["Access decision"],
+            "outputs": ["200 OK or 403 Forbidden"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "data_flow": [
+          "Request → Middleware → Clerk → Firestore → Access decision"
+        ],
+        "error_handling": [
+          "Invalid token: Redirect to login",
+          "Expired session: Refresh or redirect to login",
+          "Missing role: Treat as unauthorized",
+          "Firestore error: Deny access for safety"
+        ]
+      },
+      {
+        "id": "SFLOW-002",
+        "name": "Firebase Function - ROI Calculation",
+        "description": "Server-side calculation of ROI metrics to prevent tampering",
+        "components": ["Firebase Functions", "Firestore"],
+        "steps": [
+          {
+            "id": "STEP-063",
+            "sequence": 1,
+            "action": "Receive calculation request",
+            "actor": "system",
+            "inputs": ["User ID", "ROI inputs", "Scenario percentage"],
+            "outputs": ["Request received"],
+            "conditions": ["Authenticated request"],
+            "next_steps": ["STEP-064"]
+          },
+          {
+            "id": "STEP-064",
+            "sequence": 2,
+            "action": "Validate input data",
+            "actor": "system",
+            "inputs": ["ROI inputs"],
+            "outputs": ["Validated inputs"],
+            "conditions": ["All required fields present", "Valid numerical ranges"],
+            "next_steps": ["STEP-065"]
+          },
+          {
+            "id": "STEP-065",
+            "sequence": 3,
+            "action": "Execute ROI formulas (match verified spreadsheet)",
+            "actor": "system",
+            "inputs": ["Validated inputs", "Scenario %"],
+            "outputs": ["Net value", "ROI %", "Payback months"],
+            "conditions": [],
+            "next_steps": ["STEP-066"]
+          },
+          {
+            "id": "STEP-066",
+            "sequence": 4,
+            "action": "Save results to Firestore roiInputs collection",
+            "actor": "system",
+            "inputs": ["User ID", "Calculated results"],
+            "outputs": ["Results saved"],
+            "conditions": [],
+            "next_steps": ["STEP-067"]
+          },
+          {
+            "id": "STEP-067",
+            "sequence": 5,
+            "action": "Return calculated metrics to client",
+            "actor": "system",
+            "inputs": ["Calculated results"],
+            "outputs": ["JSON response"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "data_flow": [
+          "Client request → Function validation → Formula execution → Firestore save → Response"
+        ],
+        "error_handling": [
+          "Invalid input: Return 400 with validation errors",
+          "Calculation error: Log and return 500",
+          "Firestore write failure: Retry and return error",
+          "Timeout: Cancel and return 504"
+        ]
+      },
+      {
+        "id": "SFLOW-003",
+        "name": "Firestore Security Rules Enforcement",
+        "description": "Database-level security ensuring users only access authorized data",
+        "components": ["Firestore Security Rules"],
+        "steps": [
+          {
+            "id": "STEP-068",
+            "sequence": 1,
+            "action": "Receive database query/write request",
+            "actor": "system",
+            "inputs": ["Request context (user ID, collection, operation)"],
+            "outputs": ["Request intercepted"],
+            "conditions": [],
+            "next_steps": ["STEP-069"]
+          },
+          {
+            "id": "STEP-069",
+            "sequence": 2,
+            "action": "Evaluate security rules for the collection",
+            "actor": "system",
+            "inputs": ["Collection path", "User ID", "Operation type"],
+            "outputs": ["Rule evaluation result"],
+            "conditions": ["Rules match request pattern"],
+            "next_steps": ["STEP-070"]
+          },
+          {
+            "id": "STEP-070",
+            "sequence": 3,
+            "action": "Check ownership (userId === request.auth.uid) or admin role",
+            "actor": "system",
+            "inputs": ["Document userId field", "Request auth.uid", "User role"],
+            "outputs": ["Authorization decision"],
+            "conditions": [],
+            "next_steps": ["STEP-071"]
+          },
+          {
+            "id": "STEP-071",
+            "sequence": 4,
+            "action": "Allow or deny request",
+            "actor": "system",
+            "inputs": ["Authorization decision"],
+            "outputs": ["Access granted or permission denied"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "data_flow": [
+          "Request → Security rules evaluation → Auth check → Allow/Deny"
+        ],
+        "error_handling": [
+          "Unauthorized access: Return permission denied",
+          "Missing auth: Treat as unauthenticated",
+          "Invalid request: Deny and log",
+          "Rule evaluation error: Deny for safety"
+        ]
+      },
+      {
+        "id": "SFLOW-004",
+        "name": "Real-Time Data Synchronization",
+        "description": "Firestore real-time listeners keep UI synced across devices",
+        "components": ["Firestore Real-time Listeners", "React State"],
+        "steps": [
+          {
+            "id": "STEP-072",
+            "sequence": 1,
+            "action": "Component mounts and subscribes to Firestore collection",
+            "actor": "system",
+            "inputs": ["User ID", "Collection name"],
+            "outputs": ["Real-time listener attached"],
+            "conditions": [],
+            "next_steps": ["STEP-073"]
+          },
+          {
+            "id": "STEP-073",
+            "sequence": 2,
+            "action": "Firestore detects data change",
+            "actor": "system",
+            "inputs": ["Document update event"],
+            "outputs": ["Change notification"],
+            "conditions": [],
+            "next_steps": ["STEP-074"]
+          },
+          {
+            "id": "STEP-074",
+            "sequence": 3,
+            "action": "Push updated data to listener",
+            "actor": "system",
+            "inputs": ["Updated document"],
+            "outputs": ["Data received by client"],
+            "conditions": [],
+            "next_steps": ["STEP-075"]
+          },
+          {
+            "id": "STEP-075",
+            "sequence": 4,
+            "action": "Update React state with new data",
+            "actor": "system",
+            "inputs": ["Updated document"],
+            "outputs": ["State updated"],
+            "conditions": [],
+            "next_steps": ["STEP-076"]
+          },
+          {
+            "id": "STEP-076",
+            "sequence": 5,
+            "action": "Re-render component with updated data",
+            "actor": "system",
+            "inputs": ["New state"],
+            "outputs": ["UI updated"],
+            "conditions": [],
+            "next_steps": []
+          }
+        ],
+        "data_flow": [
+          "Component mount → Listener setup → Data change → Push to client → State update → Re-render"
+        ],
+        "error_handling": [
+          "Connection lost: Retry with exponential backoff",
+          "Permission denied: Unsubscribe and show error",
+          "Invalid data: Log and skip update",
+          "State update error: Log and maintain previous state"
+        ]
+      }
+    ],
+    "integrations": [
+      "Clerk API for authentication",
+      "Firebase Firestore for data storage",
+      "Firebase Functions for serverless compute",
+      "Firebase Storage for CSV exports",
+      "Chart.js for data visualization"
+    ],
+    "assumptions": [
+      "All calculations performed server-side for security",
+      "Firestore security rules enforce data isolation",
+      "Real-time updates have <1 second latency",
+      "CSV exports complete within 2 seconds",
+      "German labels applied throughout all flows",
+      "Mobile-responsive design supports all screen sizes",
+      "Firebase Free Spark plan sufficient for development",
+      "Clerk free tier sufficient for initial users",
+      "NextJS App Router used for all routing"
+    ]
+  }
+}

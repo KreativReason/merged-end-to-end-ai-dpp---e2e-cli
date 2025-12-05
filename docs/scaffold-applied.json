@@ -1,0 +1,462 @@
+{
+  "artifact_type": "scaffold_applied",
+  "status": "complete",
+  "validation": "passed",
+  "approval_required": false,
+  "next_phase": "development",
+  "data": {
+    "project_name": "Richtungswechsel ROI Tracker - SaaS Migration",
+    "project_root": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration",
+    "applied_at": "2025-10-16T15:05:42.657413+00:00",
+    "mode": "apply",
+    "templates_applied": [
+      {
+        "template_id": "SCAFFOLD-001",
+        "status": "success",
+        "files_created": 8,
+        "directories_created": 2
+      },
+      {
+        "template_id": "SCAFFOLD-002",
+        "status": "success",
+        "files_created": 6,
+        "directories_created": 4
+      },
+      {
+        "template_id": "SCAFFOLD-003",
+        "status": "success",
+        "files_created": 11,
+        "directories_created": 4
+      },
+      {
+        "template_id": "SCAFFOLD-004",
+        "status": "success",
+        "files_created": 6,
+        "directories_created": 1
+      },
+      {
+        "template_id": "SCAFFOLD-005",
+        "status": "success",
+        "files_created": 5,
+        "directories_created": 1
+      },
+      {
+        "template_id": "SCAFFOLD-006",
+        "status": "success",
+        "files_created": 12,
+        "directories_created": 7
+      },
+      {
+        "template_id": "SCAFFOLD-007",
+        "status": "success",
+        "files_created": 2,
+        "directories_created": 2
+      },
+      {
+        "template_id": "SCAFFOLD-008",
+        "status": "success",
+        "files_created": 5,
+        "directories_created": 1
+      },
+      {
+        "template_id": "SCAFFOLD-009",
+        "status": "success",
+        "files_created": 5,
+        "directories_created": 4
+      },
+      {
+        "template_id": "SCAFFOLD-010",
+        "status": "success",
+        "files_created": 5,
+        "directories_created": 1
+      },
+      {
+        "template_id": "SCAFFOLD-011",
+        "status": "success",
+        "files_created": 6,
+        "directories_created": 2
+      }
+    ],
+    "files_created": [
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/package.json",
+        "size_bytes": 207,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/next.config.js",
+        "size_bytes": 272,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/tsconfig.json",
+        "size_bytes": 208,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/tailwind.config.ts",
+        "size_bytes": 276,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/.env.example",
+        "size_bytes": 173,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/app/layout.tsx",
+        "size_bytes": 272,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/app/page.tsx",
+        "size_bytes": 270,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/middleware.ts",
+        "size_bytes": 271,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/sign-in/[[...sign-in]]/page.tsx",
+        "size_bytes": 289,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/sign-up/[[...sign-up]]/page.tsx",
+        "size_bytes": 289,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/api/webhooks/clerk/route.ts",
+        "size_bytes": 285,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/components/auth/SignInButton.tsx",
+        "size_bytes": 290,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/components/auth/SignOutButton.tsx",
+        "size_bytes": 291,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/components/auth/UserButton.tsx",
+        "size_bytes": 288,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/firebase.json",
+        "size_bytes": 208,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/.firebaserc",
+        "size_bytes": 172,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/firestore.rules",
+        "size_bytes": 176,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/firestore.indexes.json",
+        "size_bytes": 217,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/storage.rules",
+        "size_bytes": 174,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/lib/firebase/config.ts",
+        "size_bytes": 280,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/lib/firebase/firestore.ts",
+        "size_bytes": 283,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/lib/firebase/storage.ts",
+        "size_bytes": 281,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/functions/package.json",
+        "size_bytes": 217,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/functions/tsconfig.json",
+        "size_bytes": 218,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/functions/src/index.ts",
+        "size_bytes": 280,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/organizations.types.ts",
+        "size_bytes": 280,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/advisors.types.ts",
+        "size_bytes": 275,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/roiInputs.types.ts",
+        "size_bytes": 276,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/rwProjections.types.ts",
+        "size_bytes": 280,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/monthlyActuals.types.ts",
+        "size_bytes": 281,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/exports.types.ts",
+        "size_bytes": 274,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/calculateRoi.ts",
+        "size_bytes": 273,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/generateRwProjections.ts",
+        "size_bytes": 282,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/generateCsvExport.ts",
+        "size_bytes": 278,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/calculatePerformanceMetrics.ts",
+        "size_bytes": 288,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/syncClerkUser.ts",
+        "size_bytes": 274,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/analyse/page.tsx",
+        "size_bytes": 274,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/eingaben/page.tsx",
+        "size_bytes": 275,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/rw-tracking/page.tsx",
+        "size_bytes": 278,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/ist-tracking/page.tsx",
+        "size_bytes": 279,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/analytics/page.tsx",
+        "size_bytes": 276,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/admin/page.tsx",
+        "size_bytes": 272,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/components/RoiAnalyseForm.tsx",
+        "size_bytes": 287,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/components/EingabenTabs.tsx",
+        "size_bytes": 285,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/components/RwProjectionsTable.tsx",
+        "size_bytes": 291,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/components/IstComparisonTable.tsx",
+        "size_bytes": 291,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/components/PerformanceCharts.tsx",
+        "size_bytes": 290,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/components/AdminDashboard.tsx",
+        "size_bytes": 287,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/app/globals.css",
+        "size_bytes": 176,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/tailwind.config.ts",
+        "size_bytes": 276,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/BarChart.tsx",
+        "size_bytes": 270,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/DoughnutChart.tsx",
+        "size_bytes": 275,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/LineChart.tsx",
+        "size_bytes": 271,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/AreaChart.tsx",
+        "size_bytes": 271,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/chartConfig.ts",
+        "size_bytes": 272,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/jest.config.js",
+        "size_bytes": 272,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/jest.setup.js",
+        "size_bytes": 271,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/__tests__/components/RoiAnalyseForm.test.tsx",
+        "size_bytes": 302,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/__tests__/lib/calculateRoi.test.ts",
+        "size_bytes": 292,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/__tests__/integration/auth.test.ts",
+        "size_bytes": 292,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/test.yml",
+        "size_bytes": 169,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/deploy-staging.yml",
+        "size_bytes": 179,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/deploy-production.yml",
+        "size_bytes": 182,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/firebase-hosting-merge.yml",
+        "size_bytes": 187,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/firebase-hosting-pull-request.yml",
+        "size_bytes": 194,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/README.md",
+        "size_bytes": 181,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/CONTRIBUTING.md",
+        "size_bytes": 187,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/docs/SETUP.md",
+        "size_bytes": 185,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/docs/DEPLOYMENT.md",
+        "size_bytes": 190,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/docs/ARCHITECTURE.md",
+        "size_bytes": 192,
+        "permissions": "644"
+      },
+      {
+        "path": "/Users/hermannrohr/Documents/generated-projects/richtungswechsel-roi-tracker---saas-migration/docs/GERMAN_FIELDS.md",
+        "size_bytes": 193,
+        "permissions": "644"
+      }
+    ],
+    "post_apply_actions": [
+      {
+        "action": "pip install -r requirements.txt",
+        "directory": ".",
+        "status": "pending",
+        "output": ""
+      },
+      {
+        "action": "npm install",
+        "directory": "frontend/",
+        "status": "pending",
+        "output": ""
+      }
+    ],
+    "validation_results": {
+      "syntax_valid": true,
+      "dependencies_resolved": false,
+      "tests_passing": false
+    },
+    "setup_instructions": [
+      "Copy .env.example to .env and fill in values",
+      "Run 'docker compose up -d' to start services (if applicable)",
+      "Run 'npm run dev' in frontend and start backend app"
+    ]
+  }
+}

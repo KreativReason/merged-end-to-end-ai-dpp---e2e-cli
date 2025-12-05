@@ -1,0 +1,382 @@
+{
+  "artifact_type": "adr",
+  "scope": "project",
+  "status": "complete",
+  "validation": "passed",
+  "approval_required": true,
+  "approvers": ["Hermann", "Usama"],
+  "next_phase": "scaffolding",
+  "data": {
+    "project_name": "Richtungswechsel ROI Tracker - SaaS Migration",
+    "version": "1.0.0",
+    "created_at": "2025-10-15T00:00:00Z",
+    "decisions": [
+      {
+        "id": "ADR-0001",
+        "title": "Use Clerk for Authentication and User Management",
+        "status": "accepted",
+        "date": "2025-10-15T00:00:00Z",
+        "author": "Claude Code (Pipeline Generator)",
+        "context": {
+          "description": "The application requires secure authentication with role-based access control (admin vs user), organization management for multi-tenancy, and user profile management. The MVP used no authentication (localStorage only), which is not suitable for a multi-user SaaS application.",
+          "requirements": [
+            "Secure email/password authentication",
+            "Role-based access control (admin for coaching companies, user for financial advisors)",
+            "Organization management for multi-tenancy",
+            "Session management and token refresh",
+            "Webhook support for syncing user data to Firestore",
+            "German-language support for UI components"
+          ],
+          "constraints": [
+            "Must integrate seamlessly with NextJS 14 App Router",
+            "Should not require complex backend code for basic auth flows",
+            "Must support custom metadata for role storage",
+            "Webhook latency must be acceptable (<2 seconds)"
+          ]
+        },
+        "decision": "Use Clerk as the authentication provider for the Richtungswechsel ROI Tracker application. Clerk will handle user sign-up, sign-in, session management, and organization multi-tenancy. User roles (admin/user) will be stored in Clerk's publicMetadata and synced to Firestore via webhooks.",
+        "alternatives": [
+          {
+            "option": "NextAuth.js (Auth.js)",
+            "pros": ["Open-source and free", "Wide adoption in Next.js community", "Flexible authentication strategies", "Full control over data"],
+            "cons": ["Requires more custom code for org management", "No built-in multi-tenancy support", "Must implement own RBAC system", "More maintenance burden"],
+            "cost_estimate": "Free (open-source), but higher development time"
+          },
+          {
+            "option": "Firebase Authentication",
+            "pros": ["Native Firebase integration", "Simple to set up", "No additional service", "Custom claims for roles"],
+            "cons": ["No built-in organization management", "Limited UI customization", "Must build own org/team features", "No German UI components out-of-box"],
+            "cost_estimate": "Free tier sufficient, but feature gaps"
+          },
+          {
+            "option": "Auth0",
+            "pros": ["Enterprise-grade", "Strong RBAC and org support", "Extensive customization", "German UI available"],
+            "cons": ["More expensive than Clerk", "Steeper learning curve", "Overkill for this use case", "Complex pricing model"],
+            "cost_estimate": "$240/month for Professional tier"
+          }
+        ],
+        "rationale": "Clerk was selected because it provides the best balance of features, developer experience, and cost for this project. Key advantages: (1) Built-in organization management eliminates need for custom multi-tenancy code, (2) Excellent NextJS 14 integration with middleware and App Router support, (3) Webhook system simplifies user sync to Firestore, (4) UI components can be translated to German, (5) Role metadata storage is straightforward via publicMetadata, (6) Pricing scales with usage (~$25/month for 1000 MAU). The time saved on authentication implementation justifies the cost compared to open-source alternatives.",
+        "consequences": {
+          "positive": [
+            "Faster development - no need to build auth from scratch",
+            "Better security - Clerk handles session management, token refresh, CSRF protection",
+            "Multi-tenancy out-of-box - organization model maps directly to coaching companies",
+            "Easy role management - publicMetadata for admin/user distinction",
+            "User-friendly UI - pre-built components reduce frontend work",
+            "Reduced maintenance - Clerk handles security updates and compliance"
+          ],
+          "negative": [
+            "Vendor lock-in - migrating away from Clerk would require significant refactoring",
+            "Cost scales with users - could become expensive at >10,000 MAU",
+            "Webhook dependency - sync delays if Clerk webhooks are slow",
+            "Limited customization - some auth flows may be constrained by Clerk's model"
+          ],
+          "risks": [
+            "Clerk service outage would prevent all logins (mitigation: Clerk has 99.9% SLA)",
+            "Webhook failures could cause user/org data to be out of sync (mitigation: implement retry logic and manual sync endpoint)",
+            "German translation quality may vary (mitigation: use custom UI components where needed)"
+          ]
+        },
+        "related_decisions": ["ADR-0004"],
+        "superseded_by": null,
+        "artifact_references": {
+          "features": ["FR-001"],
+          "entities": ["ENT-002"],
+          "tasks": ["TASK-001", "TASK-002"]
+        }
+      },
+      {
+        "id": "ADR-0002",
+        "title": "Use Firebase (Firestore, Functions, Storage) as Backend Platform",
+        "status": "accepted",
+        "date": "2025-10-15T00:00:00Z",
+        "author": "Claude Code (Pipeline Generator)",
+        "context": {
+          "description": "The application requires a scalable backend for storing user data, performing ROI calculations, storing export files, and enforcing security rules. The MVP used localStorage (client-side only), which does not support multi-user access or server-side processing.",
+          "requirements": [
+            "NoSQL database for flexible schema (German field names)",
+            "Serverless functions for ROI calculations",
+            "File storage for CSV exports with signed URLs",
+            "Real-time data synchronization for collaborative features",
+            "Security rules to enforce multi-tenancy data isolation",
+            "German region support for GDPR compliance"
+          ],
+          "constraints": [
+            "Must integrate with Clerk authentication tokens",
+            "Should minimize operational overhead (prefer managed services)",
+            "Must support complex queries (e.g., aggregate advisor performance)",
+            "Cost should scale with usage (pay-as-you-go preferred)"
+          ]
+        },
+        "decision": "Use Firebase as the backend platform, specifically: (1) Cloud Firestore for database, (2) Cloud Functions for serverless computation (ROI calculations, CSV generation), (3) Cloud Storage for file storage (exports), (4) Firestore Security Rules for access control. Firebase provides a fully managed, serverless backend that integrates well with the NextJS frontend and Clerk authentication.",
+        "alternatives": [
+          {
+            "option": "Supabase (PostgreSQL + PostgREST)",
+            "pros": ["Open-source core", "Relational database with SQL", "Real-time subscriptions", "Row-level security", "German data centers available"],
+            "cons": ["Less mature than Firebase", "Requires more SQL knowledge", "German field names in PostgreSQL are less idiomatic", "Cloud Functions equivalent (Edge Functions) is newer"],
+            "cost_estimate": "Free tier, ~$25/month for Pro"
+          },
+          {
+            "option": "AWS (DynamoDB + Lambda + S3)",
+            "pros": ["Industry standard", "Highly scalable", "Flexible pricing", "German regions (Frankfurt)"],
+            "cons": ["Steeper learning curve", "More complex setup", "No real-time sync out-of-box", "Higher operational overhead"],
+            "cost_estimate": "Pay-as-you-go, ~$50/month estimated"
+          },
+          {
+            "option": "MongoDB Atlas + Vercel Functions",
+            "pros": ["Flexible document model", "Strong query capabilities", "German field names work well", "Generous free tier"],
+            "cons": ["No native file storage (need S3/Cloudflare R2)", "Vercel Functions have timeout limits", "No built-in security rules like Firestore"],
+            "cost_estimate": "Free tier, ~$57/month for M10 cluster"
+          }
+        ],
+        "rationale": "Firebase was selected for its comprehensive feature set, seamless integration, and low operational overhead. Key advantages: (1) Firestore's NoSQL model is ideal for German field names without schema constraints, (2) Cloud Functions v2 provide sufficient compute for ROI calculations with automatic scaling, (3) Firestore Security Rules enable declarative multi-tenancy enforcement, (4) Real-time listeners simplify UI updates without polling, (5) Firebase Storage integrates easily for CSV exports with signed URLs, (6) Free tier supports development and early production, (7) Google's German data centers (europe-west3) support GDPR compliance, (8) Single Firebase SDK reduces integration complexity. While Supabase is a strong alternative, Firebase's maturity and feature completeness make it the safer choice for this project timeline.",
+        "consequences": {
+          "positive": [
+            "Rapid development - Firebase SDK provides ready-to-use database, functions, storage",
+            "Automatic scaling - no server management required",
+            "Real-time sync - Firestore onSnapshot listeners for live data updates",
+            "Security declarative - Firestore rules enforce data isolation at database level",
+            "Generous free tier - 50K reads/day, 20K writes/day sufficient for early users",
+            "GDPR compliant - German data centers available"
+          ],
+          "negative": [
+            "Vendor lock-in - Firestore query model is Firebase-specific",
+            "Cost uncertainty - pricing scales with document reads/writes (could spike unexpectedly)",
+            "Query limitations - Firestore does not support complex joins or aggregations natively",
+            "Cold starts - Cloud Functions may have 1-2 second cold start latency"
+          ],
+          "risks": [
+            "Firestore read/write costs could become expensive at scale (mitigation: implement caching, optimize queries)",
+            "Complex aggregations (e.g., organization-level KPIs) may require client-side processing or Cloud Functions (mitigation: use Cloud Functions for aggregation)",
+            "Firebase lock-in makes migration difficult (mitigation: abstract database access with repository pattern)"
+          ]
+        },
+        "related_decisions": ["ADR-0005"],
+        "superseded_by": null,
+        "artifact_references": {
+          "features": ["FR-002", "FR-008"],
+          "entities": ["ENT-001", "ENT-002", "ENT-003", "ENT-004", "ENT-005", "ENT-006"],
+          "tasks": ["TASK-003", "TASK-004", "TASK-005", "TASK-011", "TASK-012"]
+        }
+      },
+      {
+        "id": "ADR-0003",
+        "title": "Adopt German-Language-First Architecture",
+        "status": "accepted",
+        "date": "2025-10-15T00:00:00Z",
+        "author": "Claude Code (Pipeline Generator)",
+        "context": {
+          "description": "The application's primary users are German-speaking financial advisors and coaching companies in Germany. The MVP used German field names in the UI but English variable names in code. For a SaaS application targeting German users exclusively, there is an opportunity to use German throughout the stack for better alignment between business domain and code.",
+          "requirements": [
+            "All UI text must be in German",
+            "Database field names should match spreadsheet exactly (German)",
+            "Error messages and validation in German",
+            "Date/number formatting for German locale (DD.MM.YYYY, €)",
+            "Future support for English language (optional, not v1)"
+          ],
+          "constraints": [
+            "Developer team may be English-speaking (readability concern)",
+            "Code reviews and documentation should remain accessible",
+            "Must not compromise code maintainability"
+          ]
+        },
+        "decision": "Adopt a German-language-first architecture where: (1) All database field names are in German (e.g., aktuelleJaehrlicheEinnahmen, durchschnittlicherKundenwert), matching the original spreadsheet exactly, (2) All UI text is in German, (3) API responses use German keys, (4) Code variables and functions use English for developer readability, (5) German field names are mapped to English types via TypeScript interfaces with JSDoc comments explaining the German terms.",
+        "alternatives": [
+          {
+            "option": "English-only codebase with German UI strings",
+            "pros": ["Easier for international developers", "Standard industry practice", "More examples and documentation available"],
+            "cons": ["Disconnect between business domain (German) and code (English)", "Field name translation errors", "Harder to verify against German spreadsheet"],
+            "cost_estimate": "No cost difference"
+          },
+          {
+            "option": "Fully German codebase (including code variables)",
+            "pros": ["Perfect alignment with business domain", "No mental translation needed", "Easier for German-speaking clients to read code"],
+            "cons": ["Severely limits developer talent pool", "Most libraries/examples in English", "Mixed language code is confusing"],
+            "cost_estimate": "Higher development cost due to limited talent pool"
+          },
+          {
+            "option": "English database, German UI with i18n",
+            "pros": ["Future-proof for multi-language support", "Standard SaaS pattern", "Easy to add English later"],
+            "cons": ["Extra abstraction layer", "Risk of translation errors", "Does not preserve spreadsheet field names exactly"],
+            "cost_estimate": "~10% more development time for i18n setup"
+          }
+        ],
+        "rationale": "German database field names with English code was selected as the optimal balance. This approach: (1) Preserves exact spreadsheet field names (aktuelleJaehrlicheEinnahmen) in the database, eliminating translation errors and making verification trivial, (2) Keeps TypeScript code in English (e.g., const currentAnnualIncome = roiInput.aktuelleJaehrlicheEinnahmen) for developer readability, (3) Uses TypeScript interfaces with JSDoc to document German→English mappings, (4) Aligns with the business domain where all documentation, client conversations, and requirements are in German, (5) Simplifies formula migration from MVP (German field names match 1:1). The slight cognitive overhead for developers is offset by reduced errors and faster client validation.",
+        "consequences": {
+          "positive": [
+            "Zero translation errors - database fields match spreadsheet exactly",
+            "Faster client feedback - clients can validate database schema directly",
+            "Formula verification is trivial - copy-paste German field names",
+            "Future German-speaking developers understand business logic immediately",
+            "Type safety - TypeScript ensures correct field access despite German names"
+          ],
+          "negative": [
+            "Developer onboarding friction - English-speaking developers must learn German field mappings",
+            "Code autocomplete less intuitive - German names may not align with developer mental model",
+            "Documentation overhead - must explain German terms in comments",
+            "Potential for typos - German compound words are long (mitgliederportalBestandskunden)"
+          ],
+          "risks": [
+            "Developer resistance to German field names (mitigation: provide comprehensive TypeScript types and JSDoc)",
+            "Inconsistent naming if new fields added without following convention (mitigation: document naming standards in README)",
+            "Harder to hire developers who refuse to work with non-English schemas (mitigation: emphasize strong typing and documentation)"
+          ]
+        },
+        "related_decisions": [],
+        "superseded_by": null,
+        "artifact_references": {
+          "features": ["FR-009"],
+          "entities": ["ENT-003", "ENT-004", "ENT-005"],
+          "tasks": ["TASK-013"]
+        }
+      },
+      {
+        "id": "ADR-0004",
+        "title": "Multi-Tenancy via Organization-Advisor Hierarchical Model",
+        "status": "accepted",
+        "date": "2025-10-15T00:00:00Z",
+        "author": "Claude Code (Pipeline Generator)",
+        "context": {
+          "description": "The application serves two distinct user types: (1) Coaching companies (admins) who manage multiple advisors, and (2) Financial advisors (users) who track their own ROI. Data isolation is critical - advisors should only see their own data, and admins should only see data for advisors in their organization. The MVP had no multi-tenancy (single-user localStorage).",
+          "requirements": [
+            "Strict data isolation - advisors cannot access other advisors' data",
+            "Organization-level admin access - admins see all advisors in their organization",
+            "Scalable to 25+ advisors per organization",
+            "Prevent cross-organization data leakage",
+            "Support future features (e.g., organization-level settings, shared resources)"
+          ],
+          "constraints": [
+            "Firestore security rules must enforce isolation at database level",
+            "Queries must be efficient (no full table scans)",
+            "Must integrate with Clerk organization model",
+            "Should not require complex application-level permission checks"
+          ]
+        },
+        "decision": "Implement multi-tenancy using a hierarchical organization→advisor model where: (1) Each organization document represents a coaching company (Clerk orgId mapped 1:1), (2) Each advisor document belongs to one organization (via organizationId foreign key), (3) All data entities (roiInputs, rwProjections, monthlyActuals, exports) include organizationId for denormalized querying, (4) Firestore security rules enforce that advisors can only access documents where organizationId matches their Clerk org claim, (5) Admin role (stored in advisors.rolle) grants read access to all documents within their organization.",
+        "alternatives": [
+          {
+            "option": "Separate Firestore database per organization",
+            "pros": ["Strongest data isolation", "Independent scaling per tenant", "Easier to migrate single tenant"],
+            "cons": ["High operational overhead", "Firestore project limits (1 database per project in Spark plan)", "Complex billing", "Cannot query across tenants"],
+            "cost_estimate": "Higher Firebase costs due to multiple projects"
+          },
+          {
+            "option": "Row-level security without denormalization",
+            "pros": ["Normalized data (organizationId only on advisors)", "Less data duplication", "Easier to update org info"],
+            "cons": ["Requires get() in security rules for every query (slow)", "Cannot index on organizationId for child collections", "Complex rules"],
+            "cost_estimate": "Similar cost, but poor performance"
+          },
+          {
+            "option": "Application-level permission checks (no Firestore rules)",
+            "pros": ["Maximum flexibility", "Can implement complex permission logic", "Not limited by Firestore rule constraints"],
+            "cons": ["Security risk if application code has bugs", "Cannot enforce isolation at database level", "Must implement in every query"],
+            "cost_estimate": "Same infrastructure cost, higher security risk"
+          }
+        ],
+        "rationale": "Hierarchical model with denormalized organizationId was selected for security, performance, and simplicity. Key advantages: (1) Firestore security rules can directly validate organizationId without expensive get() operations, (2) Queries can be efficiently indexed on organizationId, (3) Data isolation is enforced at the database level (defense in depth), (4) Aligns with Clerk's organization model for seamless integration, (5) Supports future organization-level features (e.g., custom formulas, shared resources), (6) Denormalization cost is minimal (organizationId is a single string field). The slight data duplication is acceptable for the security and performance benefits.",
+        "consequences": {
+          "positive": [
+            "Strong security - data isolation enforced by database, not just application",
+            "Fast queries - organizationId indexed for efficient filtering",
+            "Simple security rules - no complex get() lookups required",
+            "Scalable - can support thousands of organizations without performance degradation",
+            "Clear ownership model - every document belongs to exactly one organization",
+            "Clerk integration straightforward - orgId in token maps to organizationId"
+          ],
+          "negative": [
+            "Data duplication - organizationId stored in every document",
+            "Update overhead - if organization changes, must update all related documents (unlikely)",
+            "Cannot easily query across organizations (admin super-user feature would require aggregation)",
+            "Slightly larger document size due to repeated organizationId field"
+          ],
+          "risks": [
+            "Orphaned data if advisor is removed from org but documents remain (mitigation: cascade delete in security rules and app logic)",
+            "organizationId mismatch if Clerk webhook fails (mitigation: validate organizationId on every write)",
+            "Performance degradation with >1000 organizations (mitigation: Firestore scales horizontally, monitor query performance)"
+          ]
+        },
+        "related_decisions": ["ADR-0001"],
+        "superseded_by": null,
+        "artifact_references": {
+          "features": ["FR-001", "FR-007"],
+          "entities": ["ENT-001", "ENT-002"],
+          "tasks": ["TASK-003", "TASK-010"]
+        }
+      },
+      {
+        "id": "ADR-0005",
+        "title": "Formula Preservation via Direct Migration (Not Re-implementation)",
+        "status": "accepted",
+        "date": "2025-10-15T00:00:00Z",
+        "author": "Claude Code (Pipeline Generator)",
+        "context": {
+          "description": "The MVP contains complex ROI calculation formulas that have been verified against the original Excel spreadsheet and are known to be correct. These formulas calculate 12-month projections for customers, revenue, costs, and ROI based on various inputs and scenario multipliers. During the SaaS migration, there is a choice between (1) preserving the exact MVP formulas or (2) re-implementing them based on spreadsheet analysis.",
+          "requirements": [
+            "All ROI calculations must match spreadsheet exactly (verified)",
+            "Support 3 scenarios (50%, 70%, 100% performance)",
+            "Calculate cumulative values month-by-month (customers, revenue, costs, profit, ROI)",
+            "Handle division by zero gracefully",
+            "Complete calculations in <2 seconds for 12 months",
+            "Support custom formula editing by admins (future FR-010)"
+          ],
+          "constraints": [
+            "MVP formulas are in JavaScript (client-side)",
+            "Cloud Functions use TypeScript",
+            "Must maintain exactness - formula changes could impact user trust",
+            "Custom formula feature requires flexible architecture"
+          ]
+        },
+        "decision": "Preserve the exact MVP formulas by directly migrating the JavaScript calculation logic from roi-final.html to a TypeScript Cloud Function. The migration will: (1) Port the calculateProjections() function line-by-line from MVP to Cloud Function, (2) Preserve variable names and calculation order, (3) Add comprehensive unit tests using known inputs/outputs from spreadsheet, (4) Document each formula with comments explaining business logic, (5) Prepare for future custom formulas by isolating formula logic into a separate module that can be swapped or extended.",
+        "alternatives": [
+          {
+            "option": "Re-implement formulas from spreadsheet",
+            "pros": ["Fresh start - opportunity to refactor", "Could optimize for readability", "Might catch MVP bugs"],
+            "cons": ["Risk of introducing errors", "Time-consuming to verify", "Spreadsheet formulas are complex", "No guarantee of improvement"],
+            "cost_estimate": "2-3 days additional development + verification"
+          },
+          {
+            "option": "Use third-party calculation engine (e.g., HyperFormula)",
+            "pros": ["Excel compatibility", "Handles complex formulas", "Tested library"],
+            "cons": ["Overkill for this use case", "Adds dependency", "German field names may not work", "Harder to customize"],
+            "cost_estimate": "1 day integration + learning curve"
+          },
+          {
+            "option": "Client-side calculations (keep in browser)",
+            "pros": ["No Cloud Function needed", "Instant results", "Simpler architecture"],
+            "cons": ["Cannot validate calculations server-side", "Security risk (formulas visible in JS)", "Cannot use for admin-controlled custom formulas"],
+            "cost_estimate": "Free but security risk"
+          }
+        ],
+        "rationale": "Direct formula migration was selected to minimize risk and maximize confidence in calculation accuracy. Key advantages: (1) MVP formulas are already verified against spreadsheet - re-using them eliminates verification time, (2) Preserving exact logic ensures no regression - users can trust calculations match their expectations, (3) Migration is straightforward - JavaScript→TypeScript is low-risk, (4) Unit tests can use MVP test data for instant validation, (5) Formula isolation prepares for FR-010 custom formulas, (6) Cloud Function execution ensures calculations are server-side (secure) and consistent. The minor TypeScript conversion effort (1 day) is vastly lower than re-implementation risk (2-3 days + verification + potential errors).",
+        "consequences": {
+          "positive": [
+            "Zero formula errors - exact MVP logic preserved",
+            "Fast migration - copy-paste with minimal changes",
+            "High confidence - existing verification tests apply",
+            "User trust - calculations match their known MVP behavior",
+            "Server-side execution - secure and consistent",
+            "Future-ready - isolated formulas can be replaced for FR-010"
+          ],
+          "negative": [
+            "Inherits MVP limitations - no optimization opportunity",
+            "JavaScript idioms in TypeScript - may not be idiomatic TS",
+            "Tight coupling to MVP structure - harder to refactor later",
+            "Must maintain MVP-style variable names for clarity"
+          ],
+          "risks": [
+            "MVP formulas may have undiscovered bugs (mitigation: comprehensive unit tests + spreadsheet verification)",
+            "TypeScript conversion errors (mitigation: strict TypeScript config + type checking)",
+            "Cloud Function timeout for complex calculations (mitigation: performance testing + optimization if needed)"
+          ]
+        },
+        "related_decisions": ["ADR-0002", "ADR-0003"],
+        "superseded_by": null,
+        "artifact_references": {
+          "features": ["FR-002", "FR-010"],
+          "entities": ["ENT-003", "ENT-004"],
+          "tasks": ["TASK-005", "TASK-014"]
+        }
+      }
+    ]
+  }
+}

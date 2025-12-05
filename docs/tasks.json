@@ -1,0 +1,973 @@
+{
+  "artifact_type": "tasks",
+  "status": "complete",
+  "validation": "passed",
+  "approval_required": true,
+  "approvers": ["Cynthia", "Hermann", "Usama"],
+  "next_phase": "adr_documentation",
+  "data": {
+    "project_name": "Richtungswechsel ROI Tracker - SaaS Migration",
+    "version": "1.0.0",
+    "created_at": "2025-10-15T00:00:00Z",
+    "methodology": "agile",
+    "sprint_duration": "2 weeks",
+    "team_capacity": 40,
+    "epics": [
+      {
+        "id": "EPIC-001",
+        "title": "Authentication & Multi-Tenancy Foundation",
+        "description": "Implement Clerk authentication with role-based access control (admin vs user), organization multi-tenancy, and secure middleware layer",
+        "feature_ids": ["FR-001"],
+        "priority": "high",
+        "estimated_sprints": 2,
+        "success_criteria": [
+          "Users can sign up and log in via Clerk with email/password",
+          "Organizations can be created with admin role",
+          "Middleware enforces role-based access to routes",
+          "Firestore security rules prevent cross-organization data access",
+          "All authentication flows are fully tested"
+        ]
+      },
+      {
+        "id": "EPIC-002",
+        "title": "ROI Calculation & Projection Engine",
+        "description": "Migrate MVP ROI calculation logic to serverless Cloud Functions with German field names, scenario support, and formula preservation",
+        "feature_ids": ["FR-002", "FR-010"],
+        "priority": "high",
+        "estimated_sprints": 2,
+        "success_criteria": [
+          "All MVP formulas are accurately replicated",
+          "Cloud Function calculates 12-month RW projections in <2 seconds",
+          "Support for 50%, 70%, 100% scenarios",
+          "Custom formulas can be edited by admin",
+          "Calculation results match spreadsheet verification tests"
+        ]
+      },
+      {
+        "id": "EPIC-003",
+        "title": "Data Entry & Tracking Interface",
+        "description": "Build NextJS pages for ROI input (3 tabs: Einnahmen, Kunden, Kosten), RW projection viewing, and IST actuals entry with German UI",
+        "feature_ids": ["FR-003", "FR-004", "FR-005"],
+        "priority": "high",
+        "estimated_sprints": 3,
+        "success_criteria": [
+          "All German field labels match spreadsheet exactly",
+          "Input validation prevents invalid data",
+          "Auto-save prevents data loss",
+          "RW projections display in table and chart format",
+          "IST actuals can be entered and edited for each month"
+        ]
+      },
+      {
+        "id": "EPIC-004",
+        "title": "Performance Analytics & Visualization",
+        "description": "Create performance comparison views, Chart.js visualizations, and variance analysis (IST vs RW) with German labels",
+        "feature_ids": ["FR-006"],
+        "priority": "medium",
+        "estimated_sprints": 2,
+        "success_criteria": [
+          "Side-by-side IST vs RW comparison table",
+          "Variance calculations (revenue, customers) are accurate",
+          "Charts render correctly with dual-line (projected vs actual)",
+          "Performance insights are actionable",
+          "Charts are responsive and mobile-friendly"
+        ]
+      },
+      {
+        "id": "EPIC-005",
+        "title": "Admin Dashboard & User Management",
+        "description": "Build admin-only dashboard for viewing all advisors, aggregate metrics, and organization management",
+        "feature_ids": ["FR-007"],
+        "priority": "medium",
+        "estimated_sprints": 2,
+        "success_criteria": [
+          "Admin can view list of all advisors with performance summary",
+          "Drill-down into individual advisor details",
+          "Organization-level KPIs are accurate",
+          "Admin notes and annotations are supported",
+          "Export organization report to PDF/CSV"
+        ]
+      },
+      {
+        "id": "EPIC-006",
+        "title": "Export & Reporting System",
+        "description": "Implement CSV export functionality for RW projections, IST actuals, and performance reports with Firebase Storage integration",
+        "feature_ids": ["FR-008"],
+        "priority": "low",
+        "estimated_sprints": 1,
+        "success_criteria": [
+          "CSV exports generate correctly with German headers",
+          "Files are stored in Firebase Storage with signed URLs",
+          "Export history is tracked in Firestore",
+          "Download links expire after 24 hours",
+          "Export requests complete in <30 seconds"
+        ]
+      },
+      {
+        "id": "EPIC-007",
+        "title": "Infrastructure & German Localization",
+        "description": "Set up Firebase project, deploy Cloud Functions, configure Firestore security rules, and implement German language support throughout app",
+        "feature_ids": ["FR-008", "FR-009"],
+        "priority": "high",
+        "estimated_sprints": 1,
+        "success_criteria": [
+          "Firebase project is configured with Firestore, Functions, Storage",
+          "All UI text is in German",
+          "Firestore security rules enforce multi-tenancy",
+          "Cloud Functions are deployed to production",
+          "CI/CD pipeline is functional"
+        ]
+      }
+    ],
+    "tasks": [
+      {
+        "id": "TASK-001",
+        "title": "Set up Clerk authentication in NextJS 14",
+        "description": "Install Clerk SDK, configure API keys, create sign-up and sign-in pages with German UI, set up user/org sync to Firestore",
+        "type": "backend",
+        "epic_id": "EPIC-001",
+        "feature_id": "FR-001",
+        "story_ids": ["ST-001", "ST-002"],
+        "entity_ids": ["ENT-002"],
+        "flow_ids": ["FLOW-001", "FLOW-002"],
+        "journey_ids": ["JRN-001"],
+        "priority": "high",
+        "story_points": 5,
+        "estimated_hours": 8,
+        "assignee": "Backend Developer",
+        "dependencies": [],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "Users can sign up with email/password",
+          "Users can log in and maintain session",
+          "Clerk user ID is synced to Firestore advisors collection",
+          "German translations for auth UI"
+        ],
+        "definition_of_done": [
+          "Code reviewed and merged",
+          "Unit tests for auth flows",
+          "Documentation updated",
+          "Works on staging environment"
+        ],
+        "technical_notes": "Use @clerk/nextjs package. Configure middleware to protect routes. Set up webhooks for user.created and organization.created events to sync to Firestore.",
+        "risks": ["Clerk webhooks may have latency causing sync delays"],
+        "tags": ["authentication", "clerk", "foundation"],
+        "context_plan": {
+          "beginning_context": ["app/middleware.ts", "app/layout.tsx", "package.json"],
+          "end_state_files": ["app/middleware.ts", "app/(auth)/sign-in/page.tsx", "app/(auth)/sign-up/page.tsx", "lib/clerk-sync.ts", "app/api/webhooks/clerk/route.ts"],
+          "read_only_files": [".env.example", "README.md"]
+        },
+        "testing_strategy": {
+          "strategy_type": "integration",
+          "test_files": ["__tests__/auth/clerk-auth.test.ts", "__tests__/api/webhooks/clerk.test.ts"],
+          "success_criteria": ["Sign-up creates user in Clerk and Firestore", "Sign-in redirects to dashboard", "Webhook syncs user data correctly"],
+          "test_command": "npm test -- __tests__/auth"
+        },
+        "estimated_time": "1 day",
+        "scope_boundaries": ["Do not implement 2FA in this task", "Do not add social OAuth (Google) yet"]
+      },
+      {
+        "id": "TASK-002",
+        "title": "Implement role-based access control middleware",
+        "description": "Create NextJS middleware to enforce admin vs user roles, redirect unauthorized users, and protect admin-only routes",
+        "type": "backend",
+        "epic_id": "EPIC-001",
+        "feature_id": "FR-001",
+        "story_ids": ["ST-003"],
+        "entity_ids": ["ENT-002"],
+        "flow_ids": ["SFLOW-001"],
+        "journey_ids": ["JRN-003"],
+        "priority": "high",
+        "story_points": 3,
+        "estimated_hours": 5,
+        "assignee": "Backend Developer",
+        "dependencies": ["TASK-001"],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "Admin users can access /admin/* routes",
+          "Non-admin users are redirected to /dashboard",
+          "Middleware checks Clerk session for role claim",
+          "Role is stored in Firestore advisors.rolle field"
+        ],
+        "definition_of_done": [
+          "Middleware logic implemented",
+          "Integration tests pass",
+          "Protected routes verified manually",
+          "Documentation added to README"
+        ],
+        "technical_notes": "Use Next.js middleware with Clerk auth() helper. Check publicMetadata.role or custom claim. Redirect using NextResponse.redirect().",
+        "risks": ["Role changes in Clerk may not propagate immediately to middleware"],
+        "tags": ["authorization", "middleware", "security"],
+        "context_plan": {
+          "beginning_context": ["app/middleware.ts", "lib/clerk-sync.ts"],
+          "end_state_files": ["app/middleware.ts", "lib/auth-helpers.ts"],
+          "read_only_files": ["docs/erd.json"]
+        },
+        "testing_strategy": {
+          "strategy_type": "integration",
+          "test_files": ["__tests__/middleware/rbac.test.ts"],
+          "success_criteria": ["Admin can access admin routes", "User cannot access admin routes", "Unauthenticated users redirect to sign-in"],
+          "test_command": "npm test -- __tests__/middleware"
+        },
+        "estimated_time": "0.5 day",
+        "scope_boundaries": ["Do not implement fine-grained permissions (future work)"]
+      },
+      {
+        "id": "TASK-003",
+        "title": "Configure Firestore security rules for multi-tenancy",
+        "description": "Write Firestore security rules to enforce organization-level data isolation, prevent cross-org access, and validate user roles",
+        "type": "database",
+        "epic_id": "EPIC-001",
+        "feature_id": "FR-008",
+        "story_ids": ["ST-024"],
+        "entity_ids": ["ENT-001", "ENT-002", "ENT-003", "ENT-004", "ENT-005", "ENT-006"],
+        "flow_ids": ["SFLOW-003"],
+        "journey_ids": [],
+        "priority": "high",
+        "story_points": 5,
+        "estimated_hours": 8,
+        "assignee": "Backend Developer",
+        "dependencies": ["TASK-001"],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "Users can only read/write their own advisor document",
+          "Users can only access data where organizationId matches their org",
+          "Admins can read all data in their organization",
+          "Cross-organization access is blocked",
+          "Rules are tested with Firestore emulator"
+        ],
+        "definition_of_done": [
+          "Security rules deployed to Firestore",
+          "Emulator tests pass for all scenarios",
+          "Rules reviewed for security vulnerabilities",
+          "Documentation added"
+        ],
+        "technical_notes": "Use Firestore rules request.auth.token for Clerk custom claims. Validate organizationId matches request.auth.token.orgId. Use get() to fetch advisor document for ownership checks.",
+        "risks": ["Complex rules may impact read/write performance", "Incorrectly scoped rules could leak data"],
+        "tags": ["security", "firestore", "multi-tenancy"],
+        "context_plan": {
+          "beginning_context": ["firestore.rules"],
+          "end_state_files": ["firestore.rules", "tests/firestore-rules.test.ts"],
+          "read_only_files": ["docs/erd.json"]
+        },
+        "testing_strategy": {
+          "strategy_type": "integration",
+          "test_files": ["tests/firestore-rules.test.ts"],
+          "success_criteria": ["User A cannot read User B's data", "Admin can read all org data", "Unauthenticated requests are denied"],
+          "test_command": "npm run test:firestore-rules"
+        },
+        "estimated_time": "1 day",
+        "scope_boundaries": ["Do not implement field-level permissions"]
+      },
+      {
+        "id": "TASK-004",
+        "title": "Create Firestore data models for all entities",
+        "description": "Define TypeScript interfaces for all Firestore collections (organizations, advisors, roiInputs, rwProjections, monthlyActuals, exports) with German field names",
+        "type": "database",
+        "epic_id": "EPIC-007",
+        "feature_id": "FR-008",
+        "story_ids": [],
+        "entity_ids": ["ENT-001", "ENT-002", "ENT-003", "ENT-004", "ENT-005", "ENT-006"],
+        "flow_ids": [],
+        "journey_ids": [],
+        "priority": "high",
+        "story_points": 3,
+        "estimated_hours": 4,
+        "assignee": "Backend Developer",
+        "dependencies": [],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "All entity interfaces match ERD exactly",
+          "German field names are preserved",
+          "Timestamp fields use Firestore Timestamp type",
+          "Enum types are defined for lizenzTyp, rolle, exportTyp, status"
+        ],
+        "definition_of_done": [
+          "TypeScript interfaces created",
+          "Zod schemas for validation",
+          "Code compiles without errors",
+          "Used in Firestore CRUD operations"
+        ],
+        "technical_notes": "Create lib/firestore/types.ts with all interfaces. Use Zod for runtime validation. Export helper functions for converting between Firestore and app types.",
+        "risks": [],
+        "tags": ["database", "typescript", "types"],
+        "context_plan": {
+          "beginning_context": ["docs/erd.json"],
+          "end_state_files": ["lib/firestore/types.ts", "lib/firestore/validation.ts"],
+          "read_only_files": ["docs/erd.json"]
+        },
+        "testing_strategy": {
+          "strategy_type": "unit",
+          "test_files": ["__tests__/lib/firestore/types.test.ts"],
+          "success_criteria": ["Zod validation catches invalid data", "Type conversions work correctly"],
+          "test_command": "npm test -- __tests__/lib/firestore"
+        },
+        "estimated_time": "0.5 day",
+        "scope_boundaries": []
+      },
+      {
+        "id": "TASK-005",
+        "title": "Build ROI calculation Cloud Function",
+        "description": "Migrate MVP ROI calculation JavaScript logic to Firebase Cloud Function, preserve all formulas, support 3 scenarios, and return 12-month rwProjections array",
+        "type": "backend",
+        "epic_id": "EPIC-002",
+        "feature_id": "FR-002",
+        "story_ids": ["ST-004", "ST-005", "ST-006"],
+        "entity_ids": ["ENT-003", "ENT-004"],
+        "flow_ids": ["FLOW-003", "SFLOW-002"],
+        "journey_ids": ["JRN-001"],
+        "priority": "high",
+        "story_points": 8,
+        "estimated_hours": 16,
+        "assignee": "Backend Developer",
+        "dependencies": ["TASK-004"],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "All MVP formulas are exactly replicated",
+          "Function accepts roiInputs and returns rwProjections[]",
+          "Supports 50%, 70%, 100% scenarios",
+          "Calculations match spreadsheet verification",
+          "Function completes in <2 seconds"
+        ],
+        "definition_of_done": [
+          "Cloud Function deployed",
+          "Unit tests for all formulas",
+          "Integration tests with Firestore",
+          "Performance benchmarks met",
+          "Documentation with formula explanations"
+        ],
+        "technical_notes": "Use Firebase Functions v2 with onCall trigger. Port logic from roi-final.html calculateProjections() function. Preserve cumulative calculation logic for months. Apply scenario multiplier correctly.",
+        "risks": ["Floating-point precision errors in calculations", "Function timeout if processing large datasets"],
+        "tags": ["backend", "cloud-functions", "calculations"],
+        "context_plan": {
+          "beginning_context": ["/Users/hermannrohr/Documents/Richtungswechsel Documents/roi-final.html", "docs/spreadsheet-vs-mvp-analysis.md"],
+          "end_state_files": ["functions/src/calculateROI.ts", "functions/src/utils/formulas.ts"],
+          "read_only_files": ["docs/erd.json", "docs/spreadsheet-vs-mvp-analysis.md"]
+        },
+        "testing_strategy": {
+          "strategy_type": "unit",
+          "test_files": ["functions/__tests__/calculateROI.test.ts"],
+          "success_criteria": ["All test cases from spreadsheet pass", "Output matches expected rwProjections structure", "Performance <2 seconds"],
+          "test_command": "cd functions && npm test"
+        },
+        "estimated_time": "2 days",
+        "scope_boundaries": ["Do not add new formulas beyond MVP", "Do not optimize for performance (future task)"]
+      },
+      {
+        "id": "TASK-006",
+        "title": "Create ROI input form (3 tabs: Einnahmen, Kunden, Kosten)",
+        "description": "Build NextJS page with 3 tabs for entering aktuelleJaehrlicheEinnahmen, mitgliederportalBestandskunden, kundengewinnungskosten, etc. with German labels and validation",
+        "type": "frontend",
+        "epic_id": "EPIC-003",
+        "feature_id": "FR-003",
+        "story_ids": ["ST-007", "ST-008", "ST-009"],
+        "entity_ids": ["ENT-003"],
+        "flow_ids": ["FLOW-003"],
+        "journey_ids": ["JRN-001"],
+        "priority": "high",
+        "story_points": 8,
+        "estimated_hours": 12,
+        "assignee": "Frontend Developer",
+        "dependencies": ["TASK-004"],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "All German field labels match spreadsheet",
+          "Input validation (numeric, min/max ranges)",
+          "Tab navigation works smoothly",
+          "Auto-save to Firestore on blur",
+          "Loading states and error handling"
+        ],
+        "definition_of_done": [
+          "Component built and styled",
+          "Form validation works",
+          "Connected to Firestore",
+          "Responsive design tested",
+          "Accessibility (a11y) verified"
+        ],
+        "technical_notes": "Use Shadcn/UI tabs component. React Hook Form for form state. Zod for validation. Firestore onSnapshot for real-time sync. Consider using Next.js server actions for mutations.",
+        "risks": ["Complex form state management", "Auto-save conflicts if editing on multiple devices"],
+        "tags": ["frontend", "forms", "german-ui"],
+        "context_plan": {
+          "beginning_context": ["app/dashboard/eingaben/page.tsx", "components/ui/tabs.tsx"],
+          "end_state_files": ["app/dashboard/eingaben/page.tsx", "components/forms/ROIInputForm.tsx", "components/forms/tabs/EinnahmenTab.tsx", "components/forms/tabs/KundenTab.tsx", "components/forms/tabs/KostenTab.tsx"],
+          "read_only_files": ["docs/erd.json", "docs/prd.json"]
+        },
+        "testing_strategy": {
+          "strategy_type": "e2e",
+          "test_files": ["__tests__/e2e/roi-input.spec.ts"],
+          "success_criteria": ["Form submission saves to Firestore", "Validation errors display correctly", "Tab switching preserves data"],
+          "test_command": "npm run test:e2e"
+        },
+        "estimated_time": "1.5 days",
+        "scope_boundaries": ["Do not add CSV import feature yet"]
+      },
+      {
+        "id": "TASK-007",
+        "title": "Build RW Tracking page with projection table and charts",
+        "description": "Create page displaying 12-month rwProjections in table format with Chart.js line charts for customers, revenue, costs, ROI over time",
+        "type": "frontend",
+        "epic_id": "EPIC-003",
+        "feature_id": "FR-004",
+        "story_ids": ["ST-010", "ST-011"],
+        "entity_ids": ["ENT-004"],
+        "flow_ids": ["FLOW-004"],
+        "journey_ids": ["JRN-001"],
+        "priority": "high",
+        "story_points": 5,
+        "estimated_hours": 8,
+        "assignee": "Frontend Developer",
+        "dependencies": ["TASK-005"],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "Table displays all 12 months of projections",
+          "German column headers (Monat, Neue Kunden, Umsatz, etc.)",
+          "Charts render with Chart.js",
+          "Charts are interactive with tooltips",
+          "Responsive on mobile and tablet"
+        ],
+        "definition_of_done": [
+          "Page built and styled",
+          "Charts render correctly",
+          "Data fetched from Firestore",
+          "Loading states implemented",
+          "Unit tests for chart configuration"
+        ],
+        "technical_notes": "Use react-chartjs-2 wrapper for Chart.js. Fetch rwProjections from Firestore with useEffect. Format currency with Intl.NumberFormat for German locale.",
+        "risks": ["Chart rendering performance with large datasets"],
+        "tags": ["frontend", "charts", "visualization"],
+        "context_plan": {
+          "beginning_context": ["app/dashboard/rw-tracking/page.tsx", "components/charts/LineChart.tsx"],
+          "end_state_files": ["app/dashboard/rw-tracking/page.tsx", "components/tables/ProjectionTable.tsx", "components/charts/RWProjectionCharts.tsx"],
+          "read_only_files": ["docs/erd.json"]
+        },
+        "testing_strategy": {
+          "strategy_type": "unit",
+          "test_files": ["__tests__/components/charts/RWProjectionCharts.test.tsx"],
+          "success_criteria": ["Charts render without errors", "Tooltips show correct data", "Legend is clickable"],
+          "test_command": "npm test -- __tests__/components/charts"
+        },
+        "estimated_time": "1 day",
+        "scope_boundaries": ["Do not add chart export to image feature"]
+      },
+      {
+        "id": "TASK-008",
+        "title": "Build IST Tracking page for monthly actuals entry",
+        "description": "Create form for entering neueKundenIst, umsatzIst, kostenIst for each month with month selector and notes field",
+        "type": "frontend",
+        "epic_id": "EPIC-003",
+        "feature_id": "FR-005",
+        "story_ids": ["ST-013", "ST-014"],
+        "entity_ids": ["ENT-005"],
+        "flow_ids": ["FLOW-005"],
+        "journey_ids": ["JRN-002"],
+        "priority": "high",
+        "story_points": 5,
+        "estimated_hours": 8,
+        "assignee": "Frontend Developer",
+        "dependencies": ["TASK-004"],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "Month selector dropdown (1-12)",
+          "Input fields for IST data with German labels",
+          "gewinnIst calculated automatically",
+          "Notes textarea for optional annotations",
+          "eingabeAbgeschlossen checkbox to mark month complete"
+        ],
+        "definition_of_done": [
+          "Page built and styled",
+          "Form submission saves to Firestore",
+          "Validation works",
+          "Previous months' data can be edited",
+          "Success/error notifications"
+        ],
+        "technical_notes": "Use React Hook Form. Fetch existing monthlyActuals on component mount. Allow editing of past months. Show variance badge next to each field (comparing to RW projection).",
+        "risks": ["User may accidentally overwrite previous month's data"],
+        "tags": ["frontend", "forms", "ist-tracking"],
+        "context_plan": {
+          "beginning_context": ["app/dashboard/ist-tracking/page.tsx"],
+          "end_state_files": ["app/dashboard/ist-tracking/page.tsx", "components/forms/ISTDataForm.tsx"],
+          "read_only_files": ["docs/erd.json"]
+        },
+        "testing_strategy": {
+          "strategy_type": "e2e",
+          "test_files": ["__tests__/e2e/ist-tracking.spec.ts"],
+          "success_criteria": ["Form saves data correctly", "Previous months load correctly", "Validation prevents negative values"],
+          "test_command": "npm run test:e2e"
+        },
+        "estimated_time": "1 day",
+        "scope_boundaries": ["Do not add bulk import feature"]
+      },
+      {
+        "id": "TASK-009",
+        "title": "Build Performance Analytics page (IST vs RW comparison)",
+        "description": "Create page with side-by-side comparison table showing projected vs actual performance with variance highlighting",
+        "type": "frontend",
+        "epic_id": "EPIC-004",
+        "feature_id": "FR-006",
+        "story_ids": ["ST-015", "ST-016", "ST-017"],
+        "entity_ids": ["ENT-004", "ENT-005"],
+        "flow_ids": ["FLOW-006", "FLOW-007"],
+        "journey_ids": ["JRN-002"],
+        "priority": "medium",
+        "story_points": 8,
+        "estimated_hours": 12,
+        "assignee": "Frontend Developer",
+        "dependencies": ["TASK-007", "TASK-008"],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "Table shows RW projection, IST actual, and variance for each month",
+          "Variance is color-coded (green = positive, red = negative)",
+          "Charts show dual-line (projected vs actual) for revenue and customers",
+          "Filters to show specific months or metrics",
+          "Export button to download comparison data"
+        ],
+        "definition_of_done": [
+          "Page built and styled",
+          "Comparison logic works correctly",
+          "Charts render dual-line correctly",
+          "Performance tested with 12 months of data",
+          "Responsive design"
+        ],
+        "technical_notes": "Join rwProjections and monthlyActuals by month. Calculate variance as ((IST - RW) / RW) * 100. Use Chart.js multi-dataset for dual-line charts.",
+        "risks": ["Complex data joining logic", "Performance with large datasets"],
+        "tags": ["frontend", "analytics", "comparison"],
+        "context_plan": {
+          "beginning_context": ["app/dashboard/performance/page.tsx"],
+          "end_state_files": ["app/dashboard/performance/page.tsx", "components/tables/PerformanceComparisonTable.tsx", "components/charts/PerformanceCharts.tsx", "lib/analytics/variance.ts"],
+          "read_only_files": ["docs/erd.json"]
+        },
+        "testing_strategy": {
+          "strategy_type": "integration",
+          "test_files": ["__tests__/lib/analytics/variance.test.ts", "__tests__/components/PerformanceCharts.test.tsx"],
+          "success_criteria": ["Variance calculations are accurate", "Charts display both datasets", "Filters work correctly"],
+          "test_command": "npm test -- __tests__/lib/analytics"
+        },
+        "estimated_time": "1.5 days",
+        "scope_boundaries": ["Do not add AI insights yet (OPP-002)"]
+      },
+      {
+        "id": "TASK-010",
+        "title": "Build Admin Dashboard with advisor list",
+        "description": "Create admin-only dashboard page showing all advisors in organization with performance summary and drill-down capability",
+        "type": "frontend",
+        "epic_id": "EPIC-005",
+        "feature_id": "FR-007",
+        "story_ids": ["ST-019", "ST-020", "ST-021"],
+        "entity_ids": ["ENT-001", "ENT-002", "ENT-004", "ENT-005"],
+        "flow_ids": ["FLOW-008"],
+        "journey_ids": ["JRN-003"],
+        "priority": "medium",
+        "story_points": 8,
+        "estimated_hours": 12,
+        "assignee": "Frontend Developer",
+        "dependencies": ["TASK-002"],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "Table lists all advisors with name, email, status, performance score",
+          "Sortable by columns",
+          "Search by name/email",
+          "Click row to view advisor detail modal",
+          "Color-coded status (on track, slightly behind, significantly behind)",
+          "Export to CSV button"
+        ],
+        "definition_of_done": [
+          "Admin dashboard page built",
+          "Protected by middleware (admin-only)",
+          "Data fetched from Firestore with proper queries",
+          "Pagination for large datasets",
+          "Responsive and accessible"
+        ],
+        "technical_notes": "Query all advisors where organizationId matches admin's org. Calculate performance score by comparing avg variance across all months. Use TanStack Table for sorting/filtering.",
+        "risks": ["Performance with 25+ advisors", "Complex aggregation queries"],
+        "tags": ["frontend", "admin", "dashboard"],
+        "context_plan": {
+          "beginning_context": ["app/admin/dashboard/page.tsx"],
+          "end_state_files": ["app/admin/dashboard/page.tsx", "components/admin/AdvisorTable.tsx", "components/admin/AdvisorDetailModal.tsx", "lib/admin/aggregation.ts"],
+          "read_only_files": ["docs/erd.json", "app/middleware.ts"]
+        },
+        "testing_strategy": {
+          "strategy_type": "integration",
+          "test_files": ["__tests__/app/admin/dashboard.test.tsx"],
+          "success_criteria": ["Only admin can access page", "Advisor list loads correctly", "Performance score calculations are accurate"],
+          "test_command": "npm test -- __tests__/app/admin"
+        },
+        "estimated_time": "1.5 days",
+        "scope_boundaries": ["Do not add real-time updates (future enhancement)"]
+      },
+      {
+        "id": "TASK-011",
+        "title": "Implement CSV export Cloud Function",
+        "description": "Create Firebase Cloud Function to generate CSV files for RW projections, IST actuals, and performance comparison with German headers",
+        "type": "backend",
+        "epic_id": "EPIC-006",
+        "feature_id": "FR-008",
+        "story_ids": ["ST-022", "ST-023"],
+        "entity_ids": ["ENT-006"],
+        "flow_ids": ["FLOW-009"],
+        "journey_ids": ["JRN-004"],
+        "priority": "low",
+        "story_points": 5,
+        "estimated_hours": 8,
+        "assignee": "Backend Developer",
+        "dependencies": ["TASK-004"],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "Function accepts export type (rw_projections, ist_actuals, performance_comparison)",
+          "CSV generated with German column headers",
+          "File uploaded to Firebase Storage",
+          "Signed URL returned with 24-hour expiration",
+          "Export record created in Firestore"
+        ],
+        "definition_of_done": [
+          "Cloud Function deployed",
+          "CSV generation tested for all export types",
+          "File storage works",
+          "Signed URLs expire correctly",
+          "Error handling implemented"
+        ],
+        "technical_notes": "Use csv-stringify library. Upload to Firebase Storage under exports/{orgId}/{advisorId}/. Generate signed URL with getSignedUrl(). Clean up old exports after 30 days.",
+        "risks": ["Large datasets may timeout function", "CSV encoding issues with German umlauts"],
+        "tags": ["backend", "export", "cloud-functions"],
+        "context_plan": {
+          "beginning_context": ["functions/src/exportData.ts"],
+          "end_state_files": ["functions/src/exportData.ts", "functions/src/utils/csvGenerator.ts"],
+          "read_only_files": ["docs/erd.json"]
+        },
+        "testing_strategy": {
+          "strategy_type": "integration",
+          "test_files": ["functions/__tests__/exportData.test.ts"],
+          "success_criteria": ["CSV files are valid and parseable", "German characters render correctly", "Signed URLs work"],
+          "test_command": "cd functions && npm test"
+        },
+        "estimated_time": "1 day",
+        "scope_boundaries": ["Do not add Excel (.xlsx) format yet"]
+      },
+      {
+        "id": "TASK-012",
+        "title": "Set up Firebase project and deploy infrastructure",
+        "description": "Create Firebase project, enable Firestore/Functions/Storage, configure environment variables, deploy security rules and Cloud Functions",
+        "type": "devops",
+        "epic_id": "EPIC-007",
+        "feature_id": "FR-008",
+        "story_ids": ["ST-024", "ST-025"],
+        "entity_ids": [],
+        "flow_ids": [],
+        "journey_ids": [],
+        "priority": "high",
+        "story_points": 5,
+        "estimated_hours": 6,
+        "assignee": "DevOps Engineer",
+        "dependencies": [],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "Firebase project created and configured",
+          "Firestore database initialized",
+          "Cloud Functions deployed",
+          "Firebase Storage configured with CORS",
+          "Environment variables set in .env.local and Functions config"
+        ],
+        "definition_of_done": [
+          "Infrastructure documented in README",
+          "Deployment scripts created",
+          "Staging and production environments set up",
+          "Monitoring and logging enabled"
+        ],
+        "technical_notes": "Use Firebase CLI. Configure firebase.json for Functions, Firestore, Storage. Set up GitHub Actions for CI/CD. Enable Firestore backups.",
+        "risks": ["Incorrect Firebase project settings may cause deployment failures"],
+        "tags": ["devops", "firebase", "infrastructure"],
+        "context_plan": {
+          "beginning_context": ["firebase.json", "firestore.rules", "functions/package.json"],
+          "end_state_files": ["firebase.json", "firestore.rules", "firestore.indexes.json", ".github/workflows/deploy.yml"],
+          "read_only_files": ["README.md"]
+        },
+        "testing_strategy": {
+          "strategy_type": "manual",
+          "test_files": ["docs/deployment-checklist.md"],
+          "success_criteria": ["Functions deploy successfully", "Firestore queries work", "Storage uploads work"],
+          "test_command": null
+        },
+        "estimated_time": "1 day",
+        "scope_boundaries": ["Do not set up custom domain yet"]
+      },
+      {
+        "id": "TASK-013",
+        "title": "Implement German language support throughout app",
+        "description": "Create translation files, replace all English UI text with German, format dates/numbers for German locale",
+        "type": "frontend",
+        "epic_id": "EPIC-007",
+        "feature_id": "FR-009",
+        "story_ids": ["ST-026", "ST-027"],
+        "entity_ids": [],
+        "flow_ids": [],
+        "journey_ids": [],
+        "priority": "medium",
+        "story_points": 5,
+        "estimated_hours": 8,
+        "assignee": "Frontend Developer",
+        "dependencies": [],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "All UI text is in German",
+          "Dates formatted as DD.MM.YYYY",
+          "Currency formatted with € symbol and German number format",
+          "Error messages in German",
+          "Accessibility (screen reader) labels in German"
+        ],
+        "definition_of_done": [
+          "Translation file created (de.json)",
+          "All components use translation keys",
+          "Date/number formatting verified",
+          "No English text visible in app",
+          "Documentation updated"
+        ],
+        "technical_notes": "Use next-intl or i18next. Create lib/i18n/de.json with all translations. Use Intl.DateTimeFormat and Intl.NumberFormat for locale-specific formatting.",
+        "risks": ["Hardcoded strings may be missed"],
+        "tags": ["frontend", "i18n", "german"],
+        "context_plan": {
+          "beginning_context": ["app/layout.tsx", "components/**/*.tsx"],
+          "end_state_files": ["lib/i18n/de.json", "lib/i18n/config.ts", "app/layout.tsx"],
+          "read_only_files": ["docs/prd.json"]
+        },
+        "testing_strategy": {
+          "strategy_type": "manual",
+          "test_files": ["docs/german-localization-checklist.md"],
+          "success_criteria": ["All pages display German text", "Dates/numbers format correctly", "No console warnings about missing translations"],
+          "test_command": null
+        },
+        "estimated_time": "1 day",
+        "scope_boundaries": ["Do not add multi-language support (English, etc.)"]
+      },
+      {
+        "id": "TASK-014",
+        "title": "Build custom formula editor for admin",
+        "description": "Create admin-only page to edit ROI calculation formulas for organization-specific customization",
+        "type": "frontend",
+        "epic_id": "EPIC-002",
+        "feature_id": "FR-010",
+        "story_ids": ["ST-028", "ST-029", "ST-030"],
+        "entity_ids": [],
+        "flow_ids": ["FLOW-010"],
+        "journey_ids": [],
+        "priority": "low",
+        "story_points": 8,
+        "estimated_hours": 16,
+        "assignee": "Full-Stack Developer",
+        "dependencies": ["TASK-005", "TASK-010"],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "Admin can view current formulas",
+          "Code editor for formula editing (Monaco Editor)",
+          "Syntax validation before saving",
+          "Test mode to verify formulas with sample data",
+          "Version history of formula changes"
+        ],
+        "definition_of_done": [
+          "Formula editor page built",
+          "Formulas stored in Firestore organizations.customFormulas",
+          "calculateROI function uses custom formulas if available",
+          "Audit log for formula changes",
+          "Documentation on formula syntax"
+        ],
+        "technical_notes": "Use Monaco Editor (VSCode editor). Parse formulas with mathjs. Store formulas as strings in Firestore. Use eval() with sandboxing for execution (consider security implications).",
+        "risks": ["Code injection vulnerability if formulas not properly sandboxed", "Complex formulas may break calculations"],
+        "tags": ["frontend", "backend", "formulas", "advanced"],
+        "context_plan": {
+          "beginning_context": ["app/admin/formulas/page.tsx", "functions/src/calculateROI.ts"],
+          "end_state_files": ["app/admin/formulas/page.tsx", "components/admin/FormulaEditor.tsx", "lib/formulas/parser.ts", "functions/src/calculateROI.ts"],
+          "read_only_files": ["docs/prd.json"]
+        },
+        "testing_strategy": {
+          "strategy_type": "integration",
+          "test_files": ["__tests__/lib/formulas/parser.test.ts", "__tests__/functions/calculateROI-custom.test.ts"],
+          "success_criteria": ["Custom formulas execute correctly", "Invalid syntax is rejected", "Version history works"],
+          "test_command": "npm test -- __tests__/lib/formulas"
+        },
+        "estimated_time": "2 days",
+        "scope_boundaries": ["Do not add AI-powered formula suggestions"]
+      },
+      {
+        "id": "TASK-015",
+        "title": "Set up CI/CD pipeline with GitHub Actions",
+        "description": "Create GitHub Actions workflow for automated testing, linting, and deployment to Firebase on push to main branch",
+        "type": "devops",
+        "epic_id": "EPIC-007",
+        "feature_id": null,
+        "story_ids": [],
+        "entity_ids": [],
+        "flow_ids": [],
+        "journey_ids": [],
+        "priority": "medium",
+        "story_points": 3,
+        "estimated_hours": 4,
+        "assignee": "DevOps Engineer",
+        "dependencies": ["TASK-012"],
+        "blocked_by": [],
+        "acceptance_criteria": [
+          "GitHub Actions workflow runs on push to main",
+          "Tests run automatically (unit, integration, e2e)",
+          "Linting (ESLint, Prettier) enforced",
+          "Firebase deployment triggered on successful test",
+          "Notifications on deployment success/failure"
+        ],
+        "definition_of_done": [
+          "Workflow file created (.github/workflows/deploy.yml)",
+          "Secrets configured in GitHub repo",
+          "Successful deployment verified",
+          "Documentation updated"
+        ],
+        "technical_notes": "Use firebase-tools GitHub Action. Run 'npm test' before deployment. Deploy Firestore rules, Functions, and Next.js to Firebase Hosting or Vercel.",
+        "risks": ["Long workflow execution time may slow down development"],
+        "tags": ["devops", "ci-cd", "automation"],
+        "context_plan": {
+          "beginning_context": [".github/workflows/"],
+          "end_state_files": [".github/workflows/deploy.yml", ".github/workflows/test.yml"],
+          "read_only_files": ["firebase.json", "package.json"]
+        },
+        "testing_strategy": {
+          "strategy_type": "manual",
+          "test_files": ["docs/cicd-verification-checklist.md"],
+          "success_criteria": ["Workflow completes successfully", "Deployment reaches production", "Rollback works"],
+          "test_command": null
+        },
+        "estimated_time": "0.5 day",
+        "scope_boundaries": ["Do not set up staging environment yet"]
+      }
+    ],
+    "sprints": [
+      {
+        "id": "SPRINT-001",
+        "name": "Foundation Sprint: Auth & Infrastructure",
+        "start_date": "2025-10-21T00:00:00Z",
+        "end_date": "2025-11-03T23:59:59Z",
+        "capacity": 40,
+        "task_ids": ["TASK-001", "TASK-002", "TASK-003", "TASK-004", "TASK-012"],
+        "goals": [
+          "Complete authentication foundation with Clerk",
+          "Implement role-based access control",
+          "Deploy Firebase infrastructure",
+          "Define all Firestore data models"
+        ]
+      },
+      {
+        "id": "SPRINT-002",
+        "name": "Core Calculation Engine",
+        "start_date": "2025-11-04T00:00:00Z",
+        "end_date": "2025-11-17T23:59:59Z",
+        "capacity": 40,
+        "task_ids": ["TASK-005", "TASK-006"],
+        "goals": [
+          "Build and deploy ROI calculation Cloud Function",
+          "Create ROI input form (3 tabs)",
+          "Verify all MVP formulas are accurately migrated"
+        ]
+      },
+      {
+        "id": "SPRINT-003",
+        "name": "Tracking & Visualization",
+        "start_date": "2025-11-18T00:00:00Z",
+        "end_date": "2025-12-01T23:59:59Z",
+        "capacity": 40,
+        "task_ids": ["TASK-007", "TASK-008", "TASK-013"],
+        "goals": [
+          "Build RW Tracking page with charts",
+          "Build IST Tracking page for actuals",
+          "Implement German language support"
+        ]
+      },
+      {
+        "id": "SPRINT-004",
+        "name": "Analytics & Admin Dashboard",
+        "start_date": "2025-12-02T00:00:00Z",
+        "end_date": "2025-12-15T23:59:59Z",
+        "capacity": 40,
+        "task_ids": ["TASK-009", "TASK-010", "TASK-015"],
+        "goals": [
+          "Build Performance Analytics page",
+          "Build Admin Dashboard",
+          "Set up CI/CD pipeline"
+        ]
+      },
+      {
+        "id": "SPRINT-005",
+        "name": "Export, Formulas & Polish",
+        "start_date": "2025-12-16T00:00:00Z",
+        "end_date": "2025-12-29T23:59:59Z",
+        "capacity": 40,
+        "task_ids": ["TASK-011", "TASK-014"],
+        "goals": [
+          "Implement CSV export functionality",
+          "Build custom formula editor for admin",
+          "Complete final testing and bug fixes"
+        ]
+      }
+    ],
+    "dependencies": [
+      {
+        "from_task": "TASK-001",
+        "to_task": "TASK-002",
+        "type": "finish_to_start",
+        "description": "RBAC middleware requires Clerk authentication to be set up first"
+      },
+      {
+        "from_task": "TASK-001",
+        "to_task": "TASK-003",
+        "type": "finish_to_start",
+        "description": "Firestore security rules need Clerk user tokens for validation"
+      },
+      {
+        "from_task": "TASK-004",
+        "to_task": "TASK-005",
+        "type": "finish_to_start",
+        "description": "ROI calculation function needs TypeScript types defined"
+      },
+      {
+        "from_task": "TASK-004",
+        "to_task": "TASK-006",
+        "type": "finish_to_start",
+        "description": "ROI input form needs Firestore types for validation"
+      },
+      {
+        "from_task": "TASK-005",
+        "to_task": "TASK-007",
+        "type": "finish_to_start",
+        "description": "RW Tracking page displays output from ROI calculation function"
+      },
+      {
+        "from_task": "TASK-007",
+        "to_task": "TASK-009",
+        "type": "finish_to_start",
+        "description": "Performance Analytics page compares RW projections to IST actuals"
+      },
+      {
+        "from_task": "TASK-008",
+        "to_task": "TASK-009",
+        "type": "finish_to_start",
+        "description": "Performance Analytics page needs IST actuals data"
+      },
+      {
+        "from_task": "TASK-002",
+        "to_task": "TASK-010",
+        "type": "finish_to_start",
+        "description": "Admin Dashboard requires RBAC middleware for protection"
+      },
+      {
+        "from_task": "TASK-012",
+        "to_task": "TASK-015",
+        "type": "finish_to_start",
+        "description": "CI/CD pipeline needs Firebase project to be set up first"
+      },
+      {
+        "from_task": "TASK-005",
+        "to_task": "TASK-014",
+        "type": "finish_to_start",
+        "description": "Custom formula editor modifies the ROI calculation function"
+      },
+      {
+        "from_task": "TASK-010",
+        "to_task": "TASK-014",
+        "type": "finish_to_start",
+        "description": "Formula editor is accessed from Admin Dashboard"
+      }
+    ]
+  }
+}

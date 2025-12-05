@@ -1,0 +1,944 @@
+{
+  "artifact_type": "erd",
+  "project_name": "Richtungswechsel ROI Tracker - SaaS Migration",
+  "status": "complete",
+  "validation": "passed",
+  "approval_required": true,
+  "approvers": ["Cynthia", "Hermann", "Usama"],
+  "next_phase": "journey_mapping",
+  "data": {
+    "project_name": "Richtungswechsel ROI Tracker - SaaS Migration",
+    "version": "1.0.0",
+    "created_at": "2025-10-15T00:00:00Z",
+    "database_type": "firestore",
+    "entities": [
+      {
+        "id": "ENT-001",
+        "name": "organizations",
+        "description": "Coaching companies/agencies (Admin level). German name: Organisationen. One organization per Clerk admin user.",
+        "table_name": "organizations",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "STRING",
+            "primary_key": true,
+            "nullable": false,
+            "unique": true,
+            "constraints": ["Auto-generated Firestore document ID"]
+          },
+          {
+            "name": "clerkOrgId",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": true,
+            "constraints": ["Clerk organization ID for authentication", "Indexed"]
+          },
+          {
+            "name": "name",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Firmenname", "Name of coaching company"]
+          },
+          {
+            "name": "adminEmail",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Admin E-Mail", "Primary admin contact email"]
+          },
+          {
+            "name": "adminName",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Admin Name"]
+          },
+          {
+            "name": "lizenzTyp",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": "basic",
+            "constraints": ["German label: Lizenz-Typ", "Enum: basic|professional|enterprise"]
+          },
+          {
+            "name": "maxBerater",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 10,
+            "constraints": ["German label: Maximale Berater", "Maximum advisors allowed"]
+          },
+          {
+            "name": "aktiveBerater",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Aktive Berater", "Current active advisor count"]
+          },
+          {
+            "name": "createdAt",
+            "type": "DATETIME",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Erstellt am", "Organization creation timestamp"]
+          },
+          {
+            "name": "updatedAt",
+            "type": "DATETIME",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Aktualisiert am", "Last update timestamp"]
+          },
+          {
+            "name": "aktiv",
+            "type": "BOOLEAN",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": true,
+            "constraints": ["German label: Aktiv", "Organization active status"]
+          }
+        ],
+        "indexes": [
+          {
+            "name": "idx_organizations_clerkOrgId",
+            "columns": ["clerkOrgId"],
+            "unique": true
+          },
+          {
+            "name": "idx_organizations_adminEmail",
+            "columns": ["adminEmail"],
+            "unique": false
+          }
+        ]
+      },
+      {
+        "id": "ENT-002",
+        "name": "advisors",
+        "description": "Financial advisors (User level) - belongs to organization. German name: Berater. Multiple advisors per organization.",
+        "table_name": "advisors",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "STRING",
+            "primary_key": true,
+            "nullable": false,
+            "unique": true,
+            "constraints": ["Auto-generated Firestore document ID"]
+          },
+          {
+            "name": "clerkUserId",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": true,
+            "constraints": ["Clerk user ID for authentication", "Indexed"]
+          },
+          {
+            "name": "organizationId",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Organisations-ID", "Foreign key to organizations.id", "Indexed"]
+          },
+          {
+            "name": "email",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: E-Mail", "Advisor email address"]
+          },
+          {
+            "name": "vorname",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Vorname", "First name"]
+          },
+          {
+            "name": "nachname",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Nachname", "Last name"]
+          },
+          {
+            "name": "rolle",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": "user",
+            "constraints": ["German label: Rolle", "Enum: user|admin"]
+          },
+          {
+            "name": "aktiv",
+            "type": "BOOLEAN",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": true,
+            "constraints": ["German label: Aktiv", "Advisor active status"]
+          },
+          {
+            "name": "createdAt",
+            "type": "DATETIME",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Erstellt am", "Account creation timestamp"]
+          },
+          {
+            "name": "updatedAt",
+            "type": "DATETIME",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Aktualisiert am", "Last update timestamp"]
+          },
+          {
+            "name": "lastLogin",
+            "type": "DATETIME",
+            "primary_key": false,
+            "nullable": true,
+            "unique": false,
+            "constraints": ["German label: Letzter Login", "Last login timestamp"]
+          }
+        ],
+        "indexes": [
+          {
+            "name": "idx_advisors_clerkUserId",
+            "columns": ["clerkUserId"],
+            "unique": true
+          },
+          {
+            "name": "idx_advisors_organizationId",
+            "columns": ["organizationId"],
+            "unique": false
+          },
+          {
+            "name": "idx_advisors_org_email",
+            "columns": ["organizationId", "email"],
+            "unique": true
+          }
+        ]
+      },
+      {
+        "id": "ENT-003",
+        "name": "roiInputs",
+        "description": "Core ROI calculation input data (Eingaben page). German name: ROI-Eingaben. One active input set per advisor with German field names from spreadsheet.",
+        "table_name": "roiInputs",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "STRING",
+            "primary_key": true,
+            "nullable": false,
+            "unique": true,
+            "constraints": ["Auto-generated Firestore document ID"]
+          },
+          {
+            "name": "advisorId",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Berater-ID", "Foreign key to advisors.id", "Indexed"]
+          },
+          {
+            "name": "organizationId",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Organisations-ID", "Foreign key to organizations.id", "Indexed"]
+          },
+          {
+            "name": "aktuelleJaehrlicheEinnahmen",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Aktuelle jährliche Einnahmen", "Current annual income (Tab 1: Einnahmen)"]
+          },
+          {
+            "name": "durchschnittlicherKundenwert",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Durchschnittlicher Kundenwert", "Average customer value (Tab 1: Einnahmen)"]
+          },
+          {
+            "name": "mitgliederportalBestandskunden",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Mitgliederportal - Bestandskunden", "Member portal - existing customers (Tab 2: Kunden)"]
+          },
+          {
+            "name": "mitgliederportalNeukunden",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Mitgliederportal - Neukunden pro Monat", "Member portal - new customers per month (Tab 2: Kunden)"]
+          },
+          {
+            "name": "onlineNeukunden",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Online - Neukunden pro Monat", "Online - new customers per month (Tab 2: Kunden)"]
+          },
+          {
+            "name": "offlineNeukunden",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Offline - Neukunden pro Monat", "Offline - new customers per month (Tab 2: Kunden)"]
+          },
+          {
+            "name": "einzelcoachingKunden",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Einzelcoaching - Aktuelle Kunden", "1-on-1 coaching - current customers (Tab 2: Kunden)"]
+          },
+          {
+            "name": "einzelcoachingNeukundenProMonat",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Einzelcoaching - Neukunden pro Monat", "1-on-1 coaching - new customers per month (Tab 2: Kunden)"]
+          },
+          {
+            "name": "einzelcoachingAbschlussrate",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 50,
+            "constraints": ["German label: Einzelcoaching - Abschlussrate", "1-on-1 coaching - closing rate (Tab 2: Kunden)"]
+          },
+          {
+            "name": "terminvereinbarungsrate",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 50,
+            "constraints": ["German label: Terminvereinbarungsrate", "Appointment booking rate (Tab 2: Kunden)"]
+          },
+          {
+            "name": "kundengewinnungskosten",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Kundengewinnungskosten", "Customer acquisition cost (Tab 3: Kosten)"]
+          },
+          {
+            "name": "monatlicheKosten",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Monatliche Kosten", "Monthly costs (Tab 3: Kosten)"]
+          },
+          {
+            "name": "selectedScenario",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": "70",
+            "constraints": ["German label: Ausgewähltes Szenario", "Enum: 50|70|100", "Selected performance scenario percentage"]
+          },
+          {
+            "name": "createdAt",
+            "type": "DATETIME",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Erstellt am", "Input creation timestamp"]
+          },
+          {
+            "name": "updatedAt",
+            "type": "DATETIME",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Aktualisiert am", "Last update timestamp"]
+          },
+          {
+            "name": "version",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 1,
+            "constraints": ["German label: Version", "Version number for input revisions"]
+          }
+        ],
+        "indexes": [
+          {
+            "name": "idx_roiInputs_advisorId",
+            "columns": ["advisorId", "version"],
+            "unique": false
+          },
+          {
+            "name": "idx_roiInputs_organizationId",
+            "columns": ["organizationId"],
+            "unique": false
+          }
+        ]
+      },
+      {
+        "id": "ENT-004",
+        "name": "rwProjections",
+        "description": "Richtungswechsel (RW) monthly projections - calculated from roiInputs. German name: RW-Projektionen. 12 documents per advisor (one per month).",
+        "table_name": "rwProjections",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "STRING",
+            "primary_key": true,
+            "nullable": false,
+            "unique": true,
+            "constraints": ["Auto-generated Firestore document ID"]
+          },
+          {
+            "name": "advisorId",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Berater-ID", "Foreign key to advisors.id", "Indexed"]
+          },
+          {
+            "name": "organizationId",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Organisations-ID", "Foreign key to organizations.id", "Indexed"]
+          },
+          {
+            "name": "roiInputId",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: ROI-Eingaben-ID", "Foreign key to roiInputs.id", "Indexed"]
+          },
+          {
+            "name": "monat",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Monat", "Month number (1-12)"]
+          },
+          {
+            "name": "neueKundenGesamt",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Neue Kunden (Gesamt)", "Total new customers for month (calculated)", "Formula: sum of all sources"]
+          },
+          {
+            "name": "neueKundenMitgliederportal",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Neue Kunden (Mitgliederportal)", "New customers from member portal"]
+          },
+          {
+            "name": "neueKundenOnline",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Neue Kunden (Online)", "New customers from online"]
+          },
+          {
+            "name": "neueKundenOffline",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Neue Kunden (Offline)", "New customers from offline"]
+          },
+          {
+            "name": "neueKundenEinzelcoaching",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Neue Kunden (Einzelcoaching)", "New customers from 1-on-1 coaching"]
+          },
+          {
+            "name": "gesamtkundenEndeMonat",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Gesamtkunden (Ende des Monats)", "Total customers at end of month (cumulative)"]
+          },
+          {
+            "name": "umsatzMonat",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Umsatz (Monat)", "Revenue for month (calculated)", "Formula: gesamtkunden * durchschnittlicherKundenwert / 12"]
+          },
+          {
+            "name": "umsatzKumuliert",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Umsatz (Kumuliert)", "Cumulative revenue through this month"]
+          },
+          {
+            "name": "kostenMonat",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Kosten (Monat)", "Costs for month", "Formula: (neueKunden * kundengewinnungskosten) + monatlicheKosten"]
+          },
+          {
+            "name": "kostenKumuliert",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Kosten (Kumuliert)", "Cumulative costs through this month"]
+          },
+          {
+            "name": "gewinnMonat",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Gewinn (Monat)", "Profit for month", "Formula: umsatzMonat - kostenMonat"]
+          },
+          {
+            "name": "gewinnKumuliert",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Gewinn (Kumuliert)", "Cumulative profit", "Formula: umsatzKumuliert - kostenKumuliert"]
+          },
+          {
+            "name": "roi",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: ROI (%)", "Return on investment percentage", "Formula: (gewinnKumuliert / kostenKumuliert) * 100"]
+          },
+          {
+            "name": "createdAt",
+            "type": "DATETIME",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Erstellt am", "Projection creation timestamp"]
+          },
+          {
+            "name": "updatedAt",
+            "type": "DATETIME",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Aktualisiert am", "Last update timestamp"]
+          }
+        ],
+        "indexes": [
+          {
+            "name": "idx_rwProjections_advisorId_monat",
+            "columns": ["advisorId", "monat"],
+            "unique": false
+          },
+          {
+            "name": "idx_rwProjections_roiInputId",
+            "columns": ["roiInputId"],
+            "unique": false
+          },
+          {
+            "name": "idx_rwProjections_organizationId",
+            "columns": ["organizationId"],
+            "unique": false
+          }
+        ]
+      },
+      {
+        "id": "ENT-005",
+        "name": "monthlyActuals",
+        "description": "IST (actual) monthly performance data entered by advisor. German name: IST-Daten. 12 documents per advisor per year.",
+        "table_name": "monthlyActuals",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "STRING",
+            "primary_key": true,
+            "nullable": false,
+            "unique": true,
+            "constraints": ["Auto-generated Firestore document ID"]
+          },
+          {
+            "name": "advisorId",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Berater-ID", "Foreign key to advisors.id", "Indexed"]
+          },
+          {
+            "name": "organizationId",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Organisations-ID", "Foreign key to organizations.id", "Indexed"]
+          },
+          {
+            "name": "monat",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Monat", "Month number (1-12)"]
+          },
+          {
+            "name": "jahr",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Jahr", "Year"]
+          },
+          {
+            "name": "neueKundenIst",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Neue Kunden (IST)", "Actual new customers for month"]
+          },
+          {
+            "name": "umsatzIst",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Umsatz (IST)", "Actual revenue for month"]
+          },
+          {
+            "name": "kostenIst",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": 0,
+            "constraints": ["German label: Kosten (IST)", "Actual costs for month"]
+          },
+          {
+            "name": "gewinnIst",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Gewinn (IST)", "Actual profit", "Formula: umsatzIst - kostenIst", "Computed field"]
+          },
+          {
+            "name": "abweichungUmsatz",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": true,
+            "unique": false,
+            "constraints": ["German label: Abweichung Umsatz (%)", "Revenue variance from projection", "Computed field"]
+          },
+          {
+            "name": "abweichungKunden",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": true,
+            "unique": false,
+            "constraints": ["German label: Abweichung Kunden (%)", "Customer variance from projection", "Computed field"]
+          },
+          {
+            "name": "notizen",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": true,
+            "unique": false,
+            "constraints": ["German label: Notizen", "Optional notes for the month"]
+          },
+          {
+            "name": "eingabeAbgeschlossen",
+            "type": "BOOLEAN",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": false,
+            "constraints": ["German label: Eingabe abgeschlossen", "Whether data entry is finalized for month"]
+          },
+          {
+            "name": "createdAt",
+            "type": "DATETIME",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Erstellt am", "Actual data creation timestamp"]
+          },
+          {
+            "name": "updatedAt",
+            "type": "DATETIME",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Aktualisiert am", "Last update timestamp"]
+          }
+        ],
+        "indexes": [
+          {
+            "name": "idx_monthlyActuals_advisor_jahr_monat",
+            "columns": ["advisorId", "jahr", "monat"],
+            "unique": true
+          },
+          {
+            "name": "idx_monthlyActuals_organizationId",
+            "columns": ["organizationId"],
+            "unique": false
+          }
+        ]
+      },
+      {
+        "id": "ENT-006",
+        "name": "exports",
+        "description": "CSV export history and metadata. German name: Exporte. One document per export request.",
+        "table_name": "exports",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "STRING",
+            "primary_key": true,
+            "nullable": false,
+            "unique": true,
+            "constraints": ["Auto-generated Firestore document ID"]
+          },
+          {
+            "name": "advisorId",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Berater-ID", "Foreign key to advisors.id", "Indexed"]
+          },
+          {
+            "name": "organizationId",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Organisations-ID", "Foreign key to organizations.id", "Indexed"]
+          },
+          {
+            "name": "exportTyp",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Export-Typ", "Enum: rw_projections|ist_actuals|performance_comparison|full_report"]
+          },
+          {
+            "name": "dateiName",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Dateiname", "Generated CSV filename"]
+          },
+          {
+            "name": "dateiPfad",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Dateipfad", "Firebase Storage path to CSV file"]
+          },
+          {
+            "name": "dateiGroesse",
+            "type": "INTEGER",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Dateigröße (Bytes)", "File size in bytes"]
+          },
+          {
+            "name": "status",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "default": "pending",
+            "constraints": ["German label: Status", "Enum: pending|completed|failed"]
+          },
+          {
+            "name": "downloadUrl",
+            "type": "STRING",
+            "primary_key": false,
+            "nullable": true,
+            "unique": false,
+            "constraints": ["German label: Download-URL", "Temporary signed URL for download (expires after 24h)"]
+          },
+          {
+            "name": "expiresAt",
+            "type": "DATETIME",
+            "primary_key": false,
+            "nullable": true,
+            "unique": false,
+            "constraints": ["German label: Läuft ab am", "Download URL expiration timestamp"]
+          },
+          {
+            "name": "createdAt",
+            "type": "DATETIME",
+            "primary_key": false,
+            "nullable": false,
+            "unique": false,
+            "constraints": ["German label: Erstellt am", "Export request timestamp"]
+          }
+        ],
+        "indexes": [
+          {
+            "name": "idx_exports_advisorId_createdAt",
+            "columns": ["advisorId", "createdAt"],
+            "unique": false
+          },
+          {
+            "name": "idx_exports_organizationId",
+            "columns": ["organizationId"],
+            "unique": false
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "REL-001",
+        "name": "Organization-Advisors",
+        "from_entity": "ENT-001",
+        "to_entity": "ENT-002",
+        "from_cardinality": "1",
+        "to_cardinality": "many",
+        "relationship_type": "one-to-many",
+        "foreign_key": "advisors.organizationId",
+        "cascade_delete": true
+      },
+      {
+        "id": "REL-002",
+        "name": "Advisor-ROIInputs",
+        "from_entity": "ENT-002",
+        "to_entity": "ENT-003",
+        "from_cardinality": "1",
+        "to_cardinality": "many",
+        "relationship_type": "one-to-many",
+        "foreign_key": "roiInputs.advisorId",
+        "cascade_delete": true
+      },
+      {
+        "id": "REL-003",
+        "name": "ROIInput-RWProjections",
+        "from_entity": "ENT-003",
+        "to_entity": "ENT-004",
+        "from_cardinality": "1",
+        "to_cardinality": "many",
+        "relationship_type": "one-to-many",
+        "foreign_key": "rwProjections.roiInputId",
+        "cascade_delete": true
+      },
+      {
+        "id": "REL-004",
+        "name": "Advisor-MonthlyActuals",
+        "from_entity": "ENT-002",
+        "to_entity": "ENT-005",
+        "from_cardinality": "1",
+        "to_cardinality": "many",
+        "relationship_type": "one-to-many",
+        "foreign_key": "monthlyActuals.advisorId",
+        "cascade_delete": true
+      },
+      {
+        "id": "REL-005",
+        "name": "Advisor-Exports",
+        "from_entity": "ENT-002",
+        "to_entity": "ENT-006",
+        "from_cardinality": "1",
+        "to_cardinality": "many",
+        "relationship_type": "one-to-many",
+        "foreign_key": "exports.advisorId",
+        "cascade_delete": false
+      }
+    ],
+    "constraints": [],
+    "migrations": {
+      "initial_schema": "Firestore collections with multi-tenancy via organizationId. Security rules enforce data isolation. Clerk authentication provides user/org identity. German field names throughout for localization. Calculated fields computed via Cloud Functions. Real-time listeners for live updates. Indexes on foreign keys and frequently queried fields for performance.",
+      "seed_data": [
+        {
+          "collection": "organizations",
+          "purpose": "Demo organization for testing",
+          "data": {
+            "name": "Demo Coaching GmbH",
+            "adminEmail": "admin@demo.de",
+            "adminName": "Demo Admin",
+            "lizenzTyp": "professional",
+            "maxBerater": 25,
+            "aktiveBerater": 0,
+            "aktiv": true
+          }
+        }
+      ]
+    }
+  }
+}

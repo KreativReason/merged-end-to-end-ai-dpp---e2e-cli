@@ -1,0 +1,494 @@
+# Cursor AI Rules for {{PROJECT_NAME}}
+
+You are an AI assistant working on the {{PROJECT_NAME}} application.
+
+## Project Context
+
+**Project:** {{PROJECT_NAME}}
+**Tech Stack:** {{FRONTEND_FRAMEWORK}} + {{DATABASE_TYPE}} + {{AUTH_PROVIDER}}
+**Domain:** {{PROJECT_DESCRIPTION}}
+<!-- IF:MULTI_TENANT=true -->
+**Multi-Tenancy:** {{TENANT_MODEL}}-based isolation ({{TENANT_ISOLATION}})
+<!-- END:IF -->
+
+## Critical Rules
+
+<!-- IF:LANGUAGE_PRIMARY!=en -->
+### 1. {{UI_LANGUAGE_NAME}} Field Names<!-- IF:DATABASE_TYPE=firebase|mongodb --> (NON-NEGOTIABLE)<!-- END:IF -->
+
+ALL database fields<!-- IF:DATABASE_TYPE=firebase|mongodb --> MUST<!-- ELSE --> SHOULD<!-- END:IF --> use {{UI_LANGUAGE_NAME}} names to preserve business logic clarity:
+
+```typescript
+// ✅ CORRECT - {{UI_LANGUAGE_NAME}} field names with English code variables
+interface DataModel {
+<!-- IF:LANGUAGE_PRIMARY=de -->
+  aktuellesJahr: number;        // Current year
+  monatlicheEinnahmen: number;  // Monthly revenue
+  kundenanzahl: number;         // Customer count
+<!-- END:IF -->
+<!-- IF:LANGUAGE_PRIMARY=es -->
+  añoActual: number;            // Current year
+  ingresosMenuales: number;     // Monthly revenue
+  numeroClientes: number;       // Customer count
+<!-- END:IF -->
+<!-- IF:LANGUAGE_PRIMARY=fr -->
+  annéeActuelle: number;        // Current year
+  revenusMenuels: number;       // Monthly revenue
+  nombreClients: number;        // Customer count
+<!-- END:IF -->
+}
+
+// ❌ WRONG - English field names
+interface DataModel {
+  currentYear: number;          // NEVER USE ENGLISH FIELDS
+  monthlyRevenue: number;       // NEVER USE ENGLISH FIELDS
+}
+```
+
+**Code variables can be English**, but database fields preserve domain language.
+
+<!-- END:IF -->
+<!-- IF:MULTI_TENANT=true -->
+### 2. Multi-Tenancy is MANDATORY
+
+Every data write MUST include `{{TENANT_MODEL}}Id`:
+
+```typescript
+// ✅ CORRECT - {{TENANT_MODEL}}Id included
+await db.collection('{{PROJECT_SLUG}}Data').add({
+  ...data,
+  {{TENANT_MODEL}}Id: current{{TENANT_MODEL | capitalize}}Id,  // REQUIRED
+  createdAt: FieldValue.serverTimestamp()
+});
+
+// ✅ CORRECT - Query filtered by {{TENANT_MODEL}}
+const data = await db.collection('{{PROJECT_SLUG}}Data')
+  .where('{{TENANT_MODEL}}Id', '==', user{{TENANT_MODEL | capitalize}}Id)
+  .get();
+
+// ❌ WRONG - No {{TENANT_MODEL}}Id (data leakage risk)
+await db.collection('{{PROJECT_SLUG}}Data').add({
+  ...data  // Missing {{TENANT_MODEL}}Id!
+});
+```
+
+<!-- END:IF -->
+<!-- IF:DOMAIN=roi-tracking|finance|accounting -->
+### 3. Formula Preservation
+
+Business calculation formulas are VERIFIED against reference documents. DO NOT modify formulas without explicit approval.
+
+```typescript
+// ✅ CORRECT - Preserve exact formula
+// Source: Reference spreadsheet (verified)
+const calculateMetric = (revenue: number, costs: number) => {
+  return ((revenue - costs) / costs) * 100;
+};
+
+// ❌ WRONG - Don't refactor formulas
+const calculateMetric = (revenue: number, costs: number) => {
+  return (revenue / costs - 1) * 100;  // Different formula!
+};
+```
+
+<!-- END:IF -->
+
+## File Organization
+
+```
+{{PROJECT_SLUG}}/
+├── {{#IF FRONTEND_FRAMEWORK=nextjs}}app/{{ELSE}}src/{{/IF}}     # Application code
+<!-- IF:FRONTEND_FRAMEWORK=nextjs -->
+│   ├── (routes)/                    # Next.js App Router pages
+│   ├── api/                         # API routes
+│   └── components/                  # React components
+<!-- END:IF -->
+<!-- IF:FRONTEND_FRAMEWORK=react|vue|angular -->
+│   ├── components/                  # UI components
+│   ├── pages/                       # Page components
+│   ├── services/                    # API clients
+│   └── utils/                       # Utilities
+<!-- END:IF -->
+│
+├── lib/                             # Shared utilities
+<!-- IF:DATABASE_TYPE=firebase -->
+│   ├── firebase/                    # Firebase SDK config
+<!-- END:IF -->
+<!-- IF:DATABASE_TYPE=postgres|mysql -->
+│   ├── db/                          # Database client
+│   ├── migrations/                  # Database migrations
+<!-- END:IF -->
+│   └── types/                       # TypeScript types
+│
+<!-- IF:BACKEND_FRAMEWORK=firebase-functions -->
+├── functions/                       # Cloud Functions
+│   └── src/                         # Function source code
+<!-- END:IF -->
+<!-- IF:BACKEND_FRAMEWORK=fastapi|express|nestjs -->
+├── backend/                         # Backend application
+│   ├── routes/                      # API routes
+│   ├── controllers/                 # Request handlers
+│   └── services/                    # Business logic
+<!-- END:IF -->
+│
+├── docs/                            # Planning artifacts
+│   ├── adr/                         # Architecture decisions
+│   │   ├── mothership.json          # Inherited pipeline ADRs (READ-ONLY)
+│   │   ├── project.json             # Project-specific ADRs
+│   │   └── README.md                # ADR pattern documentation
+│   ├── prd.json                     # Product requirements
+│   ├── erd.json                     # Database schema
+│   ├── flow.json                    # User/system flows
+│   ├── journey.json                 # User journeys
+│   └── tasks.json                   # Implementation tasks
+│
+├── agents/                          # Project-specific AI agents
+│   ├── _common.guardrails.md        # Shared rules for all agents
+│   ├── Feature.agent.md             # For adding new features
+│   ├── Coding.agent.md              # For implementation
+│   └── Bugfix.agent.md              # For bug fixes
+│
+└── mothership/                      # Connection to parent pipeline
+    ├── connection.json              # Umbilical cord metadata
+    └── README.md                    # Connection documentation
+```
+
+## Coding Standards
+
+### TypeScript
+- Use strict mode
+- No `any` types (use `unknown` if needed)
+- Prefer interfaces over types for object shapes
+- Use Zod for runtime validation
+
+<!-- IF:FRONTEND_FRAMEWORK=nextjs -->
+### React/NextJS
+- Use Server Components by default
+- Client Components only when needed (use 'use client')
+- Use App Router file conventions
+- Implement error.tsx and loading.tsx for routes
+
+<!-- END:IF -->
+<!-- IF:FRONTEND_FRAMEWORK=react|vue|angular -->
+### {{FRONTEND_FRAMEWORK | capitalize}} Best Practices
+- Component-based architecture
+- Props validation with TypeScript
+- State management best practices
+- Performance optimization (memo, lazy loading)
+
+<!-- END:IF -->
+<!-- IF:DATABASE_TYPE=firebase -->
+### Firebase
+- Use Firebase Admin SDK in Cloud Functions
+- Use Firebase Client SDK in frontend
+- Always validate security rules locally before deploying
+- Use batched writes for multiple documents
+
+<!-- END:IF -->
+<!-- IF:DATABASE_TYPE=postgres|mysql -->
+### SQL Database
+- Use parameterized queries (prevent SQL injection)
+- Use migrations for schema changes
+- Index frequently queried columns
+- Use transactions for multi-step operations
+
+<!-- END:IF -->
+<!-- IF:DATABASE_TYPE=supabase -->
+### Supabase
+- Use Row Level Security (RLS) policies
+- Use Supabase client for queries
+- Leverage real-time subscriptions where needed
+- Use Supabase Auth for user management
+
+<!-- END:IF -->
+<!-- IF:AUTH_PROVIDER=clerk -->
+### Clerk
+- Use middleware.ts for auth protection
+- Store role in publicMetadata: `{ role: 'admin' | 'user' }`
+<!-- IF:MULTI_TENANT=true -->
+- Map Clerk orgId to database {{TENANT_MODEL}}Id
+<!-- END:IF -->
+- Implement webhook at /api/webhooks/clerk for user sync
+
+<!-- END:IF -->
+<!-- IF:AUTH_PROVIDER=nextauth -->
+### NextAuth
+- Configure providers in [...nextauth].ts
+- Use session callbacks for role management
+- Implement database adapter for persistence
+- Secure JWT signing with strong secret
+
+<!-- END:IF -->
+<!-- IF:AUTH_PROVIDER=auth0 -->
+### Auth0
+- Use Auth0 SDK for authentication flows
+- Configure roles and permissions in Auth0 dashboard
+- Implement token validation middleware
+- Handle token refresh gracefully
+
+<!-- END:IF -->
+<!-- IF:FEATURES.charts=true -->
+### Charts
+- ALL labels in {{UI_LANGUAGE_NAME}}
+- Use consistent color scheme
+- Make charts responsive
+- Add accessibility (ARIA labels)
+
+<!-- END:IF -->
+
+### Testing
+- Jest for unit tests
+<!-- IF:FRONTEND_FRAMEWORK=nextjs|react -->
+- React Testing Library for component tests
+<!-- END:IF -->
+- 80% minimum coverage
+<!-- IF:LANGUAGE_PRIMARY!=en -->
+- Test {{UI_LANGUAGE_NAME}} field names
+<!-- END:IF -->
+<!-- IF:MULTI_TENANT=true -->
+- Test multi-tenancy isolation
+<!-- END:IF -->
+
+## Before Writing Code
+
+ALWAYS check these files first:
+1. `docs/prd.json` - Feature requirements
+2. `docs/erd.json` - Database schema<!-- IF:LANGUAGE_PRIMARY!=en --> ({{UI_LANGUAGE_NAME}} fields!)<!-- END:IF -->
+3. `docs/adr/project.json` - Architectural decisions
+4. `docs/tasks.json` - Implementation tasks
+5. `agents/_common.guardrails.md` - Project rules
+
+<!-- IF:LANGUAGE_PRIMARY!=en -->
+## {{UI_LANGUAGE_NAME}} UI Requirements
+
+ALL user-facing text in {{UI_LANGUAGE_NAME}}:
+<!-- IF:LANGUAGE_PRIMARY=de -->
+- Button labels: "Speichern", "Exportieren", "Abbrechen"
+- Form labels: Match database field names
+- Error messages: "Fehler beim Laden der Daten"
+- Success messages: "Erfolgreich gespeichert"
+<!-- END:IF -->
+<!-- IF:LANGUAGE_PRIMARY=es -->
+- Button labels: "Guardar", "Exportar", "Cancelar"
+- Form labels: Match database field names
+- Error messages: "Error al cargar los datos"
+- Success messages: "Guardado exitosamente"
+<!-- END:IF -->
+<!-- IF:LANGUAGE_PRIMARY=fr -->
+- Button labels: "Enregistrer", "Exporter", "Annuler"
+- Form labels: Match database field names
+- Error messages: "Erreur lors du chargement des données"
+- Success messages: "Enregistré avec succès"
+<!-- END:IF -->
+
+<!-- END:IF -->
+
+## Common Patterns
+
+<!-- IF:MULTI_TENANT=true -->
+### Fetching Data with Multi-Tenancy
+```typescript
+'use server';
+
+import { auth } from '@{{AUTH_PROVIDER}}/{{FRONTEND_FRAMEWORK}}';
+import { db } from '@/lib/{{DATABASE_TYPE}}/client';
+
+export async function getData() {
+  const { userId } = auth();
+  if (!userId) throw new Error('Unauthorized');
+
+  const user = await get{{AUTH_PROVIDER | capitalize}}User(userId);
+  const {{TENANT_MODEL}}Id = user.{{TENANT_MODEL}}Id;
+
+  const snapshot = await db.collection('{{PROJECT_SLUG}}Data')
+    .where('{{TENANT_MODEL}}Id', '==', {{TENANT_MODEL}}Id)
+    .get();
+
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+```
+
+<!-- END:IF -->
+<!-- IF:LANGUAGE_PRIMARY!=en -->
+### Form with {{UI_LANGUAGE_NAME}} Fields
+```typescript
+'use client';
+
+import { useState } from 'react';
+
+export default function DataForm() {
+  const [input, setInput] = useState({
+<!-- IF:LANGUAGE_PRIMARY=de -->
+    aktuellerWert: 0,
+    monatlicheBetrag: 0,
+    anzahl: 0
+<!-- END:IF -->
+<!-- IF:LANGUAGE_PRIMARY=es -->
+    valorActual: 0,
+    montoMensual: 0,
+    cantidad: 0
+<!-- END:IF -->
+<!-- IF:LANGUAGE_PRIMARY=fr -->
+    valeurActuelle: 0,
+    montantMensuel: 0,
+    quantité: 0
+<!-- END:IF -->
+  });
+
+  return (
+    <form>
+<!-- IF:LANGUAGE_PRIMARY=de -->
+      <label htmlFor="value">Aktueller Wert</label>
+      <input
+        id="value"
+        type="number"
+        value={input.aktuellerWert}
+        onChange={(e) => setInput({
+          ...input,
+          aktuellerWert: Number(e.target.value)
+        })}
+      />
+<!-- END:IF -->
+      {/* More {{UI_LANGUAGE_NAME}}-labeled fields... */}
+    </form>
+  );
+}
+```
+
+<!-- END:IF -->
+<!-- IF:FEATURES.charts=true -->
+### Chart with {{UI_LANGUAGE_NAME}} Labels
+```typescript
+import { Bar } from 'react-chartjs-2';
+
+const data = {
+  labels: [/* {{UI_LANGUAGE_NAME}} month names */],
+  datasets: [{
+    label: '{{#IF LANGUAGE_PRIMARY=de}}Tatsächlicher Umsatz{{ELSE IF LANGUAGE_PRIMARY=es}}Ingresos Reales{{ELSE IF LANGUAGE_PRIMARY=fr}}Revenus Réels{{ELSE}}Actual Revenue{{/IF}}',
+    data: [12000, 15000, 13000, 17000, 16000, 19000],
+    backgroundColor: '#003f5c'
+  }]
+};
+
+const options = {
+  plugins: {
+    title: {
+      display: true,
+      text: '{{#IF LANGUAGE_PRIMARY=de}}Monatliche Entwicklung{{ELSE IF LANGUAGE_PRIMARY=es}}Desarrollo Mensual{{ELSE IF LANGUAGE_PRIMARY=fr}}Développement Mensuel{{ELSE}}Monthly Development{{/IF}}'
+    }
+  },
+  scales: {
+    y: {
+      title: {
+        display: true,
+        text: '{{#IF LANGUAGE_PRIMARY=de}}Betrag (€){{ELSE IF LANGUAGE_PRIMARY=es}}Monto (€){{ELSE IF LANGUAGE_PRIMARY=fr}}Montant (€){{ELSE}}Amount (€){{/IF}}'
+      }
+    }
+  }
+};
+
+export default function Chart() {
+  return <Bar data={data} options={options} />;
+}
+```
+
+<!-- END:IF -->
+
+## What NOT to Do
+
+<!-- IF:LANGUAGE_PRIMARY!=en -->
+❌ **Never** use English database field names
+<!-- END:IF -->
+<!-- IF:MULTI_TENANT=true -->
+❌ **Never** skip {{TENANT_MODEL}}Id in data writes
+<!-- END:IF -->
+<!-- IF:DOMAIN=roi-tracking|finance|accounting -->
+❌ **Never** modify business formulas without approval
+<!-- END:IF -->
+<!-- IF:MULTI_TENANT=true -->
+❌ **Never** allow cross-{{TENANT_MODEL}} data access
+<!-- END:IF -->
+❌ **Never** output prose when agent output should be JSON only
+❌ **Never** create duplicate IDs (check existing artifacts first)
+❌ **Never** deploy to production without tests passing
+
+## Error Messages
+
+<!-- IF:LANGUAGE_PRIMARY!=en -->
+Use {{UI_LANGUAGE_NAME}} error messages in UI:
+```typescript
+const errorMessages = {
+<!-- IF:LANGUAGE_PRIMARY=de -->
+  unauthorized: 'Keine Berechtigung',
+  notFound: 'Nicht gefunden',
+  serverError: 'Serverfehler. Bitte versuchen Sie es später erneut.',
+  validationError: 'Ungültige Eingabe'
+<!-- END:IF -->
+<!-- IF:LANGUAGE_PRIMARY=es -->
+  unauthorized: 'Sin autorización',
+  notFound: 'No encontrado',
+  serverError: 'Error del servidor. Inténtelo de nuevo más tarde.',
+  validationError: 'Entrada inválida'
+<!-- END:IF -->
+<!-- IF:LANGUAGE_PRIMARY=fr -->
+  unauthorized: 'Non autorisé',
+  notFound: 'Non trouvé',
+  serverError: 'Erreur du serveur. Veuillez réessayer plus tard.',
+  validationError: 'Entrée invalide'
+<!-- END:IF -->
+};
+```
+<!-- END:IF -->
+
+## ADR Pattern (Approach B)
+
+This project uses a dual-file ADR architecture:
+- `docs/adr/mothership.json` - Inherited pipeline decisions (READ-ONLY)
+- `docs/adr/project.json` - Project-specific decisions (MUTABLE)
+
+See `docs/adr/README.md` for full documentation.
+
+## Getting Help
+
+- Agent specs: See `agents/*.agent.md` for specialized agents
+- Planning artifacts: See `docs/*.json` for requirements
+- Architecture decisions: See `docs/adr/*.json`
+- Mothership docs: See parent pipeline README for full context
+
+## Quick Commands
+
+```bash
+# Development
+npm run dev              # Start dev server
+npm run build            # Build for production
+npm run test             # Run tests
+npm run lint             # Run ESLint
+npm run format           # Run Prettier
+
+<!-- IF:DATABASE_TYPE=firebase -->
+# Firebase
+firebase deploy --only firestore:rules    # Deploy security rules
+firebase deploy --only functions          # Deploy cloud functions
+firebase emulators:start                  # Start local emulators
+
+<!-- END:IF -->
+<!-- IF:DATABASE_TYPE=postgres|mysql -->
+# Database
+npm run migrate          # Run migrations
+npm run migrate:rollback # Rollback last migration
+npm run db:seed          # Seed database
+
+<!-- END:IF -->
+# Testing
+npm run test:watch       # Watch mode
+npm run test:coverage    # Coverage report
+```
+
+---
+
+<!-- IF:LANGUAGE_PRIMARY!=en -->
+**Remember:** This is a {{UI_LANGUAGE_NAME}}-first application. {{UI_LANGUAGE_NAME}} field names are not optional - they are a core architectural decision (see ADR-0003 in docs/adr/project.json).
+<!-- END:IF -->
+<!-- IF:MULTI_TENANT=true -->
+**Security:** {{TENANT_MODEL | capitalize}}-based isolation is MANDATORY. Every query must filter by {{TENANT_MODEL}}Id.
+<!-- END:IF -->

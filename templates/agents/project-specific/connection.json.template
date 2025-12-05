@@ -1,0 +1,85 @@
+{
+  "connection_type": "umbilical_cord",
+  "version": "{{MOTHERSHIP_VERSION}}",
+  "project_info": {
+    "name": "{{PROJECT_NAME}}",
+    "slug": "{{PROJECT_SLUG}}",
+    "generated_at": "{{GENERATED_AT}}",
+    "generated_by": "End-to-End Agentic Development Pipeline"
+  },
+  "mothership": {
+    "location": "{{MOTHERSHIP_LOCATION}}",
+    "repository": "https://github.com/KreativReason/end-to-end-ai-dev-production-pipeline",
+    "version": "{{MOTHERSHIP_VERSION}}",
+    "last_sync": "{{GENERATED_AT}}"
+  },
+  "inherited_artifacts": {
+    "adrs": {
+      "location": "docs/adr/mothership.json",
+      "scope": "read_only",
+      "decisions_count": "{{MOTHERSHIP_ADR_COUNT}}",
+      "description": "Pipeline architecture decisions inherited from mothership"
+    },
+    "pydantic_models": {
+      "source": "app/models.py (mothership)",
+      "scope": "reference_only",
+      "description": "Validation models for all artifacts"
+    },
+    "agent_patterns": {
+      "inherited_from": "agents/*.agent.md (mothership)",
+      "customized_in": "agents/*.agent.md (project)",
+      "description": "Agent specifications customized for this project"
+    }
+  },
+  "project_specific_artifacts": {
+    "adrs": {
+      "location": "docs/adr/project.json",
+      "scope": "mutable",
+      "decisions_count": "{{PROJECT_ADR_COUNT}}",
+      "description": "Project-specific architectural decisions"
+    },
+    "prd": {
+      "location": "docs/prd.json",
+      "features_count": "{{PRD_FEATURES_COUNT}}",
+      "stories_count": "{{PRD_STORIES_COUNT}}"
+    },
+    "erd": {
+      "location": "docs/erd.json",
+      "entities_count": "{{ERD_ENTITIES_COUNT}}",
+      "relationships_count": "{{ERD_RELATIONSHIPS_COUNT}}"
+    },
+    "flow": {
+      "location": "docs/flow.json",
+      "user_flows_count": "{{FLOW_USER_COUNT}}",
+      "system_flows_count": "{{FLOW_SYSTEM_COUNT}}"
+    },
+    "journey": {
+      "location": "docs/journey.json",
+      "personas_count": "{{JOURNEY_PERSONAS_COUNT}}",
+      "journeys_count": "{{JOURNEY_COUNT}}"
+    },
+    "tasks": {
+      "location": "docs/tasks.json",
+      "epics_count": "{{TASKS_EPICS_COUNT}}",
+      "tasks_count": "{{TASKS_COUNT}}",
+      "story_points": "{{TASKS_STORY_POINTS}}"
+    }
+  },
+  "update_protocol": {
+    "check_frequency": "monthly",
+    "update_command": "make mothership-sync",
+    "changelog_location": "mothership/CHANGELOG.md",
+    "breaking_changes_notification": true
+  },
+  "reporting": {
+    "enabled": false,
+    "linear_integration": false,
+    "progress_reporting_endpoint": null,
+    "status_sync_frequency": null
+  },
+  "support": {
+    "documentation": "https://docs.claude.com/claude-code",
+    "issues": "https://github.com/anthropics/claude-code/issues",
+    "mothership_contact": "{{MOTHERSHIP_CONTACT}}"
+  }
+}
