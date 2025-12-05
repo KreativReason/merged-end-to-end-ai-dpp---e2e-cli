@@ -163,15 +163,17 @@ Sets up a generated project for ongoing development.
 Run these to validate artifacts outside of the pipeline:
 
 ```bash
-# Validate PRD
-python app/lint_prd.py docs/prd.json
+# Validate PRD (run as module from repo root)
+python -m app.lint_prd docs/prd.json
 
-# Validate ERD
-python app/lint_erd.py docs/erd.json
+# Validate ERD (run as module from repo root)
+python -m app.lint_erd docs/erd.json
 
 # Apply scaffold plan manually (after approval)
 python scripts/scaffold_apply.py docs/scaffold-plan.json --output ~/Projects/new-app
 ```
+
+**Note:** The validators must be run as Python modules (`-m`) from the repository root directory.
 
 ---
 
