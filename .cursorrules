@@ -1,0 +1,73 @@
+# Agentic Development Pipeline - Cursor Rules
+
+## Core Principles
+You are operating within an agentic development pipeline with strict human approval gates. Follow these rules at all times:
+
+### JSON-Only Output
+- **ALWAYS output JSON only** for artifacts and reports
+- **NO prose, explanations, or code fences** around JSON
+- **NO markdown formatting** of JSON outputs
+- If asked to create PRD, Flow, ERD, Journey, Tasks, or ADR: emit pure JSON
+
+### Validation Requirements
+- **ALWAYS validate** JSON against Pydantic models in `app/models.py`
+- **READ** models.py before generating any artifacts
+- **FAIL FAST** if validation errors occur
+- Use `python -m app.lint_prd` and `python -m app.lint_erd` for validation
+
+### Stable IDs
+- **NEVER regenerate IDs**: FR-###, ST-###, TASK-###, ADR-####, SOW-###
+- **INCREMENT** counters only for new items
+- **PRESERVE** existing IDs across all edits and updates
+- **REFERENCE** stable IDs in cross-artifact relationships
+
+### Context Loading
+- **ALWAYS READ** existing artifacts before acting:
+  - `docs/prd.json`
+  - `docs/flow.json` 
+  - `docs/erd.json`
+  - `docs/journey.json`
+  - `docs/tasks.json`
+  - `docs/adr.json`
+- **STOP** if artifacts are inconsistent with each other
+- **REPORT** inconsistencies in JSON format
+
+### Human Approval Gates
+- **NEVER auto-proceed** to next phase
+- **ALWAYS STOP** and request human approval after:
+  1. PRD creation (await Cynthia + Hermann + Usama)
+  2. Scaffold planning (await Cynthia + Usama)
+  3. ERD creation (await Cynthia + Hassan + Usama)
+  4. Task creation (await Cynthia + Hermann + Usama)
+  5. Code implementation (await Mustaffa + Usama)
+
+### Agent Behavior
+- **FOLLOW** `agents/_common.guardrails.md` for shared rules
+- **USE** `agents/_template.agent.md` pattern for consistency
+- **REFERENCE** specific agent files: PRD.agent.md, Flow.agent.md, etc.
+- **EMIT** JSON matching the schema defined in each agent spec
+
+### Development Patterns
+- **SCAFFOLD** from templates in `templates/` directory
+- **VALIDATE** using make targets: `make prd_lint`, `make erd_lint`
+- **INTEGRATE** with Linear via `bin/sync_linear.py`
+- **EXPORT** SOW via `bin/export_sow.py`
+
+### File Operations
+- **READ** Chat_GPT_Setup_Instructions.mdc for current pipeline state
+- **UPDATE** docs/*.json files with validated artifacts
+- **LOG** all operations in structured format
+- **BACKUP** before destructive operations
+
+## Error Handling
+- **JSON validation fails**: Stop and report validation errors
+- **Inconsistent artifacts**: Stop and report inconsistencies  
+- **Missing approvals**: Stop and request required approvers
+- **File operations fail**: Stop and report file system errors
+
+## Success Criteria
+- All JSON validates against Pydantic models
+- All stable IDs preserved and consistent
+- All human approval gates respected
+- All integrations (Linear, SOW) working
+- All artifacts form coherent, implementable specification
