@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "kreativreason-e2e-pipeline",
-      "source": ".",
+      "source": "./",
       "description": "E2E Pipeline with Human-in-the-Loop validation. Interview to production-ready project.",
       "version": "2.0.0"
     }
