@@ -1,44 +1,31 @@
-# Usage Guide: Running the Pipeline
+# Usage Guide
 
-## Overview
-
-This guide shows you **exactly how to use** the End-to-End Agentic Development Pipeline to transform a client interview into a production-ready project.
-
----
-
-## Pipeline Execution Flow
-
-```
-Client Interview → PRD → Flow → ERD → Journey → Tasks → ADR → Scaffolded Project
-```
-
-Each step uses specialized agents that you invoke with the `@agent` syntax in your AI coding assistant (Cursor, Claude Code, etc.).
+Step-by-step examples for using the KreativReason E2E Pipeline.
 
 ---
 
 ## Prerequisites
 
-1. Client interview transcript saved as markdown file (e.g., `interviews/client-interview.md`)
-2. AI coding assistant with agent support (Cursor or Claude Code)
-3. Project initialized with this pipeline system
+1. Plugin installed: `/plugin install github:KreativReason/merged-end-to-end-ai-dpp---e2e-cli`
+2. Plugin enabled: `/plugin enable kreativreason-e2e-pipeline`
+3. Python with Pydantic: `pip install pydantic`
 
 ---
 
-## Step-by-Step Usage
+## Phase 1: Genesis (New Project from Interview)
 
-### Step 1: Prepare Client Interview
+### Step 1: Prepare Interview Transcript
 
-Create a markdown file with the client interview transcript:
+Create a markdown file with the client interview:
 
 ```bash
 mkdir -p interviews
-nano interviews/client-interview.md
 ```
 
-**Example Interview Format:**
+**Example: `interviews/booking-platform.md`**
 ```markdown
-# Client Interview - [Project Name]
-Date: 2025-10-01
+# Client Interview - Booking Platform
+Date: 2025-01-15
 Client: John Doe (john@example.com)
 
 ## Requirements Discussed
@@ -47,492 +34,315 @@ Client: John Doe (john@example.com)
 A: We need a platform where users can book appointments with service providers...
 
 **Q: Who are your target users?**
-A: Both service providers and customers...
+A: Both service providers and customers looking for services...
 
-[Continue with full transcript...]
+**Q: What features are essential for launch?**
+A: User registration, provider profiles, booking calendar, payment processing...
 ```
 
----
+### Step 2: Run Genesis Pipeline
 
-### Step 2: Generate PRD (Product Requirements Document)
-
-In your AI coding assistant, type:
-
+```bash
+/kreativreason:genesis
 ```
-@PRD.agent.md implement
 
-Generate PRD from client interview:
-- transcript_path: interviews/client-interview.md
-- project_name: "Appointment Booking Platform"
-- owner_email: "john@example.com"
-```
+The pipeline will prompt you for:
+- Interview transcript path
+- Project name
+- Output directory
 
 **What happens:**
-1. PRD agent reads the interview transcript
-2. Extracts features, user stories, requirements
-3. Creates `docs/prd.json` with structured requirements
-4. Marks status as `approval_required: true`
 
-**Output:** `docs/prd.json`
-
-**Next:** Human approval gate (Cynthia + Hermann + Usama review)
-
----
-
-### Step 3: Generate Flow Diagram
-
-After PRD is approved:
-
-```
-@Flow.agent.md implement
-
-Generate user flow from approved PRD:
-- prd_path: docs/prd.json
-```
-
-**What happens:**
-1. Flow agent reads approved PRD
-2. Creates user flow diagrams (Mermaid format)
-3. Maps user journeys through the application
-4. Creates `docs/flow.json`
-
-**Output:** `docs/flow.json`
-
----
-
-### Step 4: Generate ERD (Entity Relationship Diagram)
-
-```
-@ERD.agent.md implement
-
-Generate database schema from PRD and Flow:
-- prd_path: docs/prd.json
-- flow_path: docs/flow.json
-```
-
-**What happens:**
-1. ERD agent analyzes requirements and flows
-2. Designs database schema with entities and relationships
-3. Creates validation rules and constraints
-4. Creates `docs/erd.json`
-
-**Output:** `docs/erd.json`
-
-**Next:** Human approval gate (Cynthia + Hassan + Usama review)
-
----
-
-### Step 5: Generate User Journey Map
-
-```
-@Journey.agent.md implement
-
-Generate user journey map:
-- prd_path: docs/prd.json
-- flow_path: docs/flow.json
-- erd_path: docs/erd.json
-```
-
-**What happens:**
-1. Journey agent maps complete user experiences
-2. Identifies touchpoints, pain points, opportunities
-3. Creates `docs/journey.json`
-
-**Output:** `docs/journey.json`
-
----
-
-### Step 6: Generate Task Breakdown
-
-```
-@Planner.agent.md implement
-
-Break down project into Linear tasks:
-- prd_path: docs/prd.json
-- flow_path: docs/flow.json
-- erd_path: docs/erd.json
-- journey_path: docs/journey.json
-```
-
-**What happens:**
-1. Planner agent creates detailed task breakdown
-2. Organizes tasks by phase and priority
-3. Creates Linear-compatible task list
-4. Creates `docs/tasks.json`
-
-**Output:** `docs/tasks.json`
-
-**Next:** Human approval gate (Cynthia + Hermann + Usama review)
-
----
-
-### Step 7: Generate Architecture Decisions
-
-```
-@ADR.agent.md implement
-
-Generate architecture decisions:
-- prd_path: docs/prd.json
-- erd_path: docs/erd.json
-- tasks_path: docs/tasks.json
-```
-
-**What happens:**
-1. ADR agent analyzes all previous artifacts
-2. Makes technology stack decisions (NextJS vs FastAPI, etc.)
-3. Decides on architecture patterns
-4. Creates/updates `docs/adr.json`
-
-**Output:** `docs/adr.json` (updated with new decisions)
-
----
-
-### Step 8: Generate Scaffolding Plan (Stage 1)
-
-```
-make scaffold-plan
-
-# Or manually:
-@Scaffolder.agent.md implement plan
-
-Generate scaffolding plan:
-- prd_path: docs/prd.json
-- erd_path: docs/erd.json
-- adr_path: docs/adr.json
-- tasks_path: docs/tasks.json
-```
-
-**What happens:**
-1. Scaffolder agent (planning mode) reads all artifacts
-2. Creates detailed project structure plan
-3. Specifies all files, dependencies, configurations
-4. Creates `docs/scaffold-plan.json`
-5. **DOES NOT CREATE ANY FILES** (planning only)
-
-**Output:** `docs/scaffold-plan.json`
-
-**Next:** Human approval gate (Cynthia + Usama review plan)
-
----
-
-### Step 9: Execute Scaffolding (Stage 2)
-
-**ONLY after plan approval:**
-
-```
-make scaffold-apply
-
-# Or manually:
-@Scaffolder.agent.md implement build
-
-Execute approved scaffolding plan:
-- plan_path: docs/scaffold-plan.json
-- output_dir: ../generated-projects/[project-name]
-```
-
-**What happens:**
-1. Scaffolder agent (build mode) reads approved plan
-2. Creates complete project directory structure
-3. Generates all boilerplate code (CRUD, Auth, etc.)
-4. Installs dependencies
-5. Configures environments
-6. Creates project-specific agents and rules
-7. Sets up git repository
-
-**Output:** Complete project in `../generated-projects/[project-name]/`
-
----
-
-## Using Rules and Context
-
-### Adding Context with @ Mentions
-
-You can reference specific files for additional context:
-
-```
-@PRD.agent.md @interviews/client-interview.md @docs/adr.json implement
-
-Generate PRD considering existing architectural decisions
-```
-
-### Using Guardrails
-
-All agents automatically follow common guardrails. To add custom rules:
-
-```
-@PRD.agent.md @custom-rules.md implement
-
-Generate PRD with custom validation rules
-```
-
----
-
-## Advanced Usage
-
-### Re-running Stages
-
-If you need to regenerate an artifact:
-
-```
-@PRD.agent.md implement
-
-Regenerate PRD with updated requirements:
-- transcript_path: interviews/client-interview-v2.md
-- project_name: "Appointment Booking Platform"
-- owner_email: "john@example.com"
-- preserve_ids: true  # Keep existing FR-001, ST-001 IDs
-```
-
-### Partial Updates
-
-Update specific sections:
-
-```
-@ERD.agent.md implement
-
-Update ERD to add new "Payment" entity:
-- prd_path: docs/prd.json
-- existing_erd: docs/erd.json
-- new_requirements: "Add payment processing with Stripe"
-```
-
-### Validation
-
-Validate artifacts before approval:
+| Step | Agent | Output | Approval |
+|------|-------|--------|----------|
+| 1 | PRD | `docs/prd.json` | Required |
+| 2 | Flow | `docs/flow.json` | - |
+| 3 | ERD | `docs/erd.json` | Required |
+| 4 | Journey | `docs/journey.json` | - |
+| 5 | Planner | `docs/tasks.json` | Required |
+| 6 | ADR | `docs/adr.json` | - |
+| 7 | Scaffolder | `docs/scaffold-plan.json` | Required |
+| 8 | Build | Complete project | - |
+
+### Step 3: Review and Approve Artifacts
+
+At each approval gate, review the generated JSON:
 
 ```bash
-# PRD validation
-python -m app.validators.prd_validator docs/prd.json
+# View PRD
+cat docs/prd.json | jq .
 
-# ERD validation
-python -m app.validators.erd_validator docs/erd.json
+# Validate PRD
+python app/lint_prd.py docs/prd.json
+
+# View ERD
+cat docs/erd.json | jq .
+
+# Validate ERD
+python app/lint_erd.py docs/erd.json
 ```
 
----
+### Step 4: Generated Project
 
-## Example: Complete Pipeline Run
+After scaffolding, your project is ready:
 
-Here's a real example from start to finish:
-
-```bash
-# 1. Create interview transcript
-mkdir -p interviews
-nano interviews/saas-booking-platform.md
-# [Add interview content...]
-
-# 2. Generate PRD
 ```
-In AI assistant:
-```
-@PRD.agent.md implement
-transcript_path: interviews/saas-booking-platform.md
-project_name: "BookEasy - Service Booking Platform"
-owner_email: "founder@bookeasy.com"
+~/Projects/booking-platform/
+├── src/                      # Application code
+├── docs/                     # Copied artifacts
+│   ├── prd.json
+│   ├── erd.json
+│   └── tasks.json
+├── CLAUDE.md                 # Claude Code context
+├── package.json              # Dependencies
+└── ...
 ```
 
-Wait for approval ✓
-
-```bash
-# 3. Generate Flow
-```
-```
-@Flow.agent.md implement
-prd_path: docs/prd.json
-```
+### Step 5: Push to GitHub
 
 ```bash
-# 4. Generate ERD
-```
-```
-@ERD.agent.md implement
-prd_path: docs/prd.json
-flow_path: docs/flow.json
-```
-
-Wait for approval ✓
-
-```bash
-# 5. Generate Journey
-```
-```
-@Journey.agent.md implement
-prd_path: docs/prd.json
-flow_path: docs/flow.json
-erd_path: docs/erd.json
-```
-
-```bash
-# 6. Generate Tasks
-```
-```
-@Planner.agent.md implement
-prd_path: docs/prd.json
-flow_path: docs/flow.json
-erd_path: docs/erd.json
-journey_path: docs/journey.json
-```
-
-Wait for approval ✓
-
-```bash
-# 7. Generate ADR
-```
-```
-@ADR.agent.md implement
-prd_path: docs/prd.json
-erd_path: docs/erd.json
-tasks_path: docs/tasks.json
-```
-
-```bash
-# 8. Generate Scaffolding Plan
-```
-```
-@Scaffolder.agent.md implement plan
-prd_path: docs/prd.json
-erd_path: docs/erd.json
-adr_path: docs/adr.json
-tasks_path: docs/tasks.json
-```
-
-Wait for approval ✓
-
-```bash
-# 9. Build Project
-```
-```
-@Scaffolder.agent.md implement build
-plan_path: docs/scaffold-plan.json
-output_dir: ../generated-projects/bookeasy
-```
-
-```bash
-# 10. Verify output
-cd ../generated-projects/bookeasy
-ls -la
-# Should see: src/, tests/, .cursor/, agents/, README.md, etc.
-
-# 11. Push to GitHub
-git remote add origin https://github.com/your-org/bookeasy.git
+cd ~/Projects/booking-platform
+git init
+git add .
+git commit -m "Initial scaffold from Genesis pipeline"
+git remote add origin https://github.com/yourorg/booking-platform.git
 git push -u origin main
 ```
 
-**Done!** You now have a complete, production-ready project repository.
+---
+
+## Phase 2: Development (Existing Project)
+
+### Plan a Feature
+
+```bash
+/kreativreason:plan "Add OAuth authentication with Google and GitHub"
+```
+
+Creates a structured implementation plan with:
+- Task breakdown
+- File modifications needed
+- Testing strategy
+- Dependencies
+
+### Execute the Plan
+
+```bash
+/kreativreason:work
+```
+
+Executes the plan:
+- Creates git worktree for isolation
+- Implements changes step by step
+- Runs tests continuously
+- Creates PR when complete
+
+### Code Review
+
+```bash
+/kreativreason:review
+```
+
+Runs 11 specialized reviewers in parallel:
+
+| Reviewer | Focus |
+|----------|-------|
+| Security Sentinel | OWASP, injection, auth vulnerabilities |
+| Performance Oracle | N+1 queries, memory leaks, caching |
+| Architecture Strategist | ADR alignment, coupling, patterns |
+| Code Simplicity | YAGNI, over-engineering |
+| Data Integrity | Schema safety, migrations |
+| TypeScript Reviewer | TS patterns, type safety |
+| Python Reviewer | PEP standards, Pythonic code |
+| Rails Reviewer | Rails conventions |
+| Frontend Races | Async bugs, race conditions |
+| Pattern Recognition | Design pattern issues |
+| DHH Rails | Rails best practices |
+
+### Process Review Findings
+
+```bash
+/kreativreason:triage
+```
+
+Organizes findings into actionable todos by priority.
 
 ---
 
-## Status Tracking During Pipeline
+## Common Workflows
 
-As you run each step, update the project status:
+### Adding a New Feature
 
 ```bash
-# After each stage completes
-make save-status
+# 1. Plan the feature
+/kreativreason:plan "Add user notification system with email and push"
+
+# 2. Execute the plan
+/kreativreason:work
+
+# 3. Review before merge
+/kreativreason:review
+
+# 4. Fix any issues
+/kreativreason:triage
 ```
 
-This tracks progress in `PROJECT_STATUS.json` and syncs with the team.
+### Fixing a Bug
+
+```bash
+# 1. Plan the fix
+/kreativreason:plan "Fix payment processing timeout on slow connections"
+
+# 2. Execute
+/kreativreason:work
+
+# 3. Review
+/kreativreason:review
+```
+
+### Transitioning from Genesis
+
+After running genesis, set up for ongoing development:
+
+```bash
+/kreativreason:handoff
+```
+
+This:
+- Copies necessary artifacts
+- Sets up project-specific agents
+- Configures development environment
+
+---
+
+## Manual Validation
+
+Run validators outside the pipeline:
+
+```bash
+# Validate PRD
+python app/lint_prd.py docs/prd.json
+
+# Validate ERD
+python app/lint_erd.py docs/erd.json
+
+# Apply scaffold manually
+python scripts/scaffold_apply.py \
+  --plan docs/scaffold-plan.json \
+  --prd docs/prd.json \
+  --erd docs/erd.json \
+  --approved-by "ProductOwner" \
+  --approved-by "TechLead" \
+  --output docs/scaffold-applied.json \
+  --project-dir ~/Projects/my-app
+```
+
+---
+
+## Using Individual Agents
+
+Invoke specific agents directly:
+
+```bash
+# Security review only
+@agents/review/security-sentinel.md
+
+# Performance analysis
+@agents/review/performance-oracle.md
+
+# TypeScript code review
+@agents/review/kieran-typescript-reviewer.md
+```
+
+---
+
+## Skills
+
+Skills provide reusable capabilities:
+
+| Skill | Purpose |
+|-------|---------|
+| `git-worktree` | Isolated branch development |
+| `file-todos` | Structured todo management |
+| `validation` | JSON/Pydantic validation |
+| `artifact-sync` | Cross-artifact consistency |
+| `frontend-design` | Design system reference |
+| `gemini-imagegen` | Mockup generation |
+| `compound-docs` | Pattern documentation |
+| `skill-creator` | Create new skills |
 
 ---
 
 ## Troubleshooting
 
-### "Agent not found"
+### "Approval required"
 
-Make sure you're using the correct agent file name:
+The pipeline pauses at approval gates. Review the artifact and continue:
+
 ```bash
-ls agents/
-# Should show: PRD.agent.md, Flow.agent.md, etc.
+# Check artifact
+cat docs/prd.json | jq '.data.features'
+
+# Continue after review (the pipeline will prompt)
 ```
 
 ### "Validation failed"
 
-Check the artifact against the schema:
 ```bash
-cat docs/prd.json | jq .
-python -m app.validators.prd_validator docs/prd.json
+# Check specific errors
+python app/lint_prd.py docs/prd.json
+
+# Common issues:
+# - Missing required fields
+# - Invalid ID format (should be FR-001, not fr-001)
+# - Duplicate IDs
 ```
 
-### "Approval required"
-
-Check who needs to approve:
-```bash
-cat docs/prd.json | jq '.approvers'
-# Shows: ["Cynthia", "Hermann", "Usama"]
-```
-
-### "File not found"
-
-Ensure previous steps completed:
-```bash
-ls docs/
-# Should show: prd.json, flow.json, erd.json, etc.
-```
-
----
-
-## Quick Reference Commands
+### "Agent not found"
 
 ```bash
-# Status management
-make status              # Check current pipeline status
-make save-status         # Save progress
+# Verify plugin is enabled
+/plugin list
 
-# Validation
-python -m app.validators.prd_validator docs/prd.json
-python -m app.validators.erd_validator docs/erd.json
-
-# Scaffolding
-make scaffold-plan       # Generate plan (Stage 1)
-make scaffold-apply      # Build project (Stage 2)
+# Re-enable if needed
+/plugin enable kreativreason-e2e-pipeline
 ```
 
 ---
 
-## Next Steps After Scaffolding
+## Example: Complete Genesis Run
 
-Once the project is generated:
+```bash
+# 1. Start Claude Code in any directory
+claude
 
-1. **Navigate to project:**
-   ```bash
-   cd ../generated-projects/[project-name]
-   ```
+# 2. Enable plugin
+/plugin enable kreativreason-e2e-pipeline
 
-2. **Review project-specific README:**
-   ```bash
-   cat README.md
-   ```
+# 3. Run genesis
+/kreativreason:genesis
 
-3. **Start development:**
-   ```bash
-   npm install          # or appropriate package manager
-   npm run dev          # Start development server
-   ```
+# Provide when prompted:
+# - Interview: interviews/saas-platform.md
+# - Project name: "SaaS Platform"
+# - Output: ~/Projects/saas-platform
 
-4. **Use project-specific agents:**
-   The generated project has its own `.cursor/rules/` and `agents/` for feature development
+# 4. Review PRD when generated
+# (Pipeline pauses for approval)
 
-5. **Report back to mothership:**
-   Progress syncs back to the main pipeline via `mothership/` directory
+# 5. Continue through each stage
+# (Approving at each gate)
 
----
-
-## Summary
-
-**The complete flow is:**
-
-1. Write client interview → `interviews/client-interview.md`
-2. `@PRD.agent.md implement` → `docs/prd.json` → Approval
-3. `@Flow.agent.md implement` → `docs/flow.json`
-4. `@ERD.agent.md implement` → `docs/erd.json` → Approval
-5. `@Journey.agent.md implement` → `docs/journey.json`
-6. `@Planner.agent.md implement` → `docs/tasks.json` → Approval
-7. `@ADR.agent.md implement` → `docs/adr.json`
-8. `@Scaffolder.agent.md implement plan` → `docs/scaffold-plan.json` → Approval
-9. `@Scaffolder.agent.md implement build` → `../generated-projects/[project]/`
-10. `cd ../generated-projects/[project]` → Start building features!
-
-**Key insight:** Each `@agent.md` file is a specialized AI agent that you invoke by mentioning it in your coding assistant, then giving it the `implement` command with required parameters.
+# 6. Final output
+cd ~/Projects/saas-platform
+npm install
+npm run dev
+```
 
 ---
 
-*Need help? See [WORKFLOW.md](WORKFLOW.md) for team collaboration or [README.md](README.md) for system overview.*
+## Next Steps
+
+- [SETUP.md](SETUP.md) - Installation and configuration
+- [WORKFLOW.md](WORKFLOW.md) - Team collaboration patterns
+- [CLAUDE.md](CLAUDE.md) - Claude Code project instructions

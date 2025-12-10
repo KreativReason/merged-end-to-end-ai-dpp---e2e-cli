@@ -33,6 +33,19 @@ Analyze PRD features and Flow data requirements to create comprehensive ERD with
 - Foreign key relationships must be valid
 - Data types must align with chosen technology stack
 
+### Foreign Key Convention (CRITICAL)
+The relationship direction follows database FK semantics:
+- **`from_entity`**: The CHILD entity that CONTAINS the foreign key column
+- **`to_entity`**: The PARENT entity being REFERENCED by the foreign key
+- **`foreign_key`**: Column name that EXISTS in `from_entity`'s attributes
+
+Example: For "Order belongs to User":
+- `from_entity`: Order (has `user_id` column)
+- `to_entity`: User (referenced by `user_id`)
+- `foreign_key`: "user_id" (column in Order table)
+
+The linter validates that `foreign_key` exists in `from_entity`'s attributes.
+
 ### Consistency Rules
 - All data mentioned in flows must have corresponding entities/attributes
 - Relationships must support required user stories
@@ -82,14 +95,15 @@ Analyze PRD features and Flow data requirements to create comprehensive ERD with
     "relationships": [
       {
         "id": "REL-001",
-        "name": "user_orders",
-        "from_entity": "ENT-001",
-        "to_entity": "ENT-002",
-        "from_cardinality": "1",
-        "to_cardinality": "many",
-        "relationship_type": "one-to-many",
+        "name": "order_belongs_to_user",
+        "from_entity": "ENT-002",
+        "to_entity": "ENT-001",
+        "from_cardinality": "many",
+        "to_cardinality": "1",
+        "relationship_type": "many-to-one",
         "foreign_key": "user_id",
-        "cascade_delete": false
+        "cascade_delete": false,
+        "_comment": "from_entity (Order) HAS the FK column (user_id), to_entity (User) is REFERENCED"
       }
     ],
     "constraints": [

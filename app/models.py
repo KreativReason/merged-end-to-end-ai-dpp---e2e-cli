@@ -371,9 +371,18 @@ class ContextPlan(BaseModel):
 class TestingStrategy(BaseModel):
     """Testing approach for task validation."""
     strategy_type: str = Field(..., pattern=r"^(integration|unit|e2e|manual)$")
-    test_files: List[str] = Field(..., min_items=1)
+    test_files: List[str] = Field(default_factory=list)  # Can be empty for manual testing
     success_criteria: List[str] = Field(..., min_items=1)
     test_command: Optional[str] = None
+
+    @field_validator('test_files', mode='after')
+    def validate_test_files_for_automated_testing(cls, v, info):
+        """For automated testing (unit, integration, e2e), test_files is required."""
+        data = info.data
+        strategy_type = data.get('strategy_type', '')
+        if strategy_type in ('unit', 'integration', 'e2e') and len(v) == 0:
+            raise ValueError(f"test_files required for {strategy_type} testing strategy")
+        return v
 
 class Task(BaseModel):
     id: str = Field(..., pattern=r"^TASK-\d{3}$", description="Task ID format: TASK-001")
@@ -572,12 +581,20 @@ class EnvironmentVariable(BaseModel):
 
 
 class FeatureSelections(BaseModel):
-    auth: str = Field(..., pattern=r"^(firebase|auth0|nextauth|none)$")
-    db: str = Field(..., pattern=r"^(postgres|supabase|firebase|none)$")
-    storage: str = Field(..., pattern=r"^(s3|firebase|none)$")
+    """
+    Feature selections for scaffolding. Now supports extensible options
+    for different project types (frontend, backend, full-stack).
+    """
+    auth: str = Field(..., pattern=r"^(firebase|auth0|nextauth|jwt|api_key|clerk|custom|none)$")
+    db: str = Field(..., pattern=r"^(postgres|mysql|mongodb|supabase|firebase|redis|none)$")
+    storage: str = Field(..., pattern=r"^(s3|gcs|firebase|minio|local|none)$")
     realtime: bool = Field(default=False)
     ci: bool = Field(default=True)
     docs: bool = Field(default=True)
+    # Additional optional fields for extensibility
+    framework: Optional[str] = Field(None, description="Framework: nestjs|express|fastapi|nextjs|rails|etc")
+    language: Optional[str] = Field(None, description="Primary language: typescript|python|ruby|etc")
+    additional: Dict[str, Any] = Field(default_factory=dict, description="Additional feature flags")
 
 
 class ScaffoldPlanData(BaseModel):

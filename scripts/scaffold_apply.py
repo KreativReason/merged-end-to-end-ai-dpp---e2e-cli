@@ -94,7 +94,15 @@ def write_placeholder_file(path: Path, project_name: str) -> None:
 
 
 def generate_placeholder_content(path: Path, project_name: str) -> str:
+    """Generate placeholder content appropriate for the file type.
+
+    For TypeScript files, detects if it's a backend (NestJS) or frontend (React)
+    file based on the file path and name patterns.
+    """
     suffix = path.suffix.lower()
+    filename = path.name.lower()
+    path_str = str(path).lower()
+
     if suffix in {".py"}:
         return (
             '"""\n'
@@ -105,15 +113,91 @@ def generate_placeholder_content(path: Path, project_name: str) -> str:
             'if __name__ == "__main__":\n'
             '    print("{project_name} placeholder: {path}")\n'
         ).format(project_name=project_name, path=str(path))
-    if suffix in {".ts", ".tsx", ".js", ".jsx"}:
+
+    if suffix in {".ts", ".js"}:
+        # Detect file type by name pattern for NestJS backend files
+        if any(pattern in filename for pattern in [
+            '.module.', '.service.', '.controller.', '.gateway.',
+            '.guard.', '.interceptor.', '.pipe.', '.filter.',
+            '.decorator.', '.middleware.', '.entity.', '.dto.',
+            '.repository.', '.interface.', '.provider.', '.config.'
+        ]):
+            return _generate_nestjs_placeholder(path, project_name, filename)
+
+        # Jest setup/config files - generate valid Jest config, not React JSX
+        if 'jest' in filename and ('setup' in filename or 'config' in filename):
+            return (
+                f"// Jest setup file for {project_name}\n\n"
+                f"// Add global test configuration here\n"
+                f"// e.g., jest.setTimeout(30000);\n"
+            )
+
+        # Test utility files
+        if 'test' in filename and 'util' in filename:
+            return (
+                f"// Test utilities for {project_name}\n\n"
+                f"// Add shared test utilities here\n"
+                f"// e.g., mock factories, test helpers, etc.\n\n"
+                f"export {{}};\n"
+            )
+
+        # Default TypeScript export for non-React .ts files
         return (
-            """// Auto-generated placeholder file for {project_name}\nexport default function Placeholder() {{\n  return (<div>Placeholder: {path}</div>);\n}}\n"""
-        ).format(project_name=project_name, path=str(path))
+            f"// Auto-generated placeholder for {project_name}\n"
+            f"// File: {path}\n\n"
+            f"export {{}}\n"
+        )
+
+    if suffix in {".tsx", ".jsx"}:
+        # React/JSX files get React component placeholders
+        return (
+            f"// Auto-generated placeholder file for {project_name}\n"
+            f"export default function Placeholder() {{\n"
+            f"  return (<div>Placeholder: {path}</div>);\n"
+            f"}}\n"
+        )
+
     if suffix in {".sql"}:
         return (
             """-- Auto-generated placeholder migration for {project_name}\n-- File: {path}\n"""
         ).format(project_name=project_name, path=str(path))
     if suffix in {".json"}:
+        # Handle special JSON config files
+        if 'tsconfig' in filename:
+            if 'build' in filename:
+                return json.dumps({
+                    "extends": "./tsconfig.json",
+                    "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+                }, indent=2)
+            else:
+                # Main tsconfig.json - provide NestJS-compatible defaults
+                return json.dumps({
+                    "compilerOptions": {
+                        "module": "commonjs",
+                        "declaration": True,
+                        "removeComments": True,
+                        "emitDecoratorMetadata": True,
+                        "experimentalDecorators": True,
+                        "useDefineForClassFields": False,
+                        "allowSyntheticDefaultImports": True,
+                        "target": "ES2022",
+                        "sourceMap": True,
+                        "outDir": "./dist",
+                        "baseUrl": "./",
+                        "incremental": True,
+                        "skipLibCheck": True,
+                        "strictNullChecks": True,
+                        "strict": True,
+                        "noImplicitAny": True,
+                        "strictBindCallApply": True,
+                        "forceConsistentCasingInFileNames": True,
+                        "noFallthroughCasesInSwitch": True,
+                        "paths": {"@/*": ["src/*"]}
+                    },
+                    "include": ["src/**/*"],
+                    "exclude": ["node_modules", "dist"]
+                }, indent=2)
+        # Generic placeholder for other JSON files
         return json.dumps({"placeholder": True, "project": project_name, "path": str(path)}, indent=2)
     if suffix in {".md"}:
         return f"# Placeholder\n\nFile: {path}\n\nProject: {project_name}\n"
@@ -121,6 +205,126 @@ def generate_placeholder_content(path: Path, project_name: str) -> str:
         return "# Placeholder Makefile generated by scaffold apply\n\n.DEFAULT_GOAL := help\n\nhelp:\n\t@echo 'Replace this placeholder with real Makefile content.'\n"
     # Default text
     return f"// Placeholder for {project_name}: {path}\n"
+
+
+def _generate_nestjs_placeholder(path: Path, project_name: str, filename: str) -> str:
+    """Generate appropriate NestJS placeholder based on file type."""
+    # Extract class name from filename (e.g., call.service.ts -> CallService)
+    parts = filename.replace('.ts', '').replace('.js', '').split('.')
+    if len(parts) >= 2:
+        base_name = ''.join(word.capitalize() for word in parts[0].split('-'))
+        file_type = parts[1].capitalize()
+        class_name = f"{base_name}{file_type}"
+    else:
+        class_name = "Placeholder"
+
+    if '.module.' in filename:
+        return (
+            f"import {{ Module }} from '@nestjs/common';\n\n"
+            f"@Module({{\n"
+            f"  imports: [],\n"
+            f"  controllers: [],\n"
+            f"  providers: [],\n"
+            f"  exports: [],\n"
+            f"}})\n"
+            f"export class {class_name} {{}}\n"
+        )
+    elif '.service.' in filename:
+        return (
+            f"import {{ Injectable }} from '@nestjs/common';\n\n"
+            f"@Injectable()\n"
+            f"export class {class_name} {{\n"
+            f"  // TODO: Implement {project_name} service methods\n"
+            f"}}\n"
+        )
+    elif '.controller.' in filename:
+        return (
+            f"import {{ Controller }} from '@nestjs/common';\n\n"
+            f"@Controller()\n"
+            f"export class {class_name} {{\n"
+            f"  // TODO: Implement {project_name} controller endpoints\n"
+            f"}}\n"
+        )
+    elif '.gateway.' in filename:
+        return (
+            f"import {{ WebSocketGateway }} from '@nestjs/websockets';\n\n"
+            f"@WebSocketGateway()\n"
+            f"export class {class_name} {{\n"
+            f"  // TODO: Implement WebSocket handlers\n"
+            f"}}\n"
+        )
+    elif '.entity.' in filename:
+        return (
+            f"import {{ Entity, PrimaryGeneratedColumn, Column }} from 'typeorm';\n\n"
+            f"@Entity()\n"
+            f"export class {class_name} {{\n"
+            f"  @PrimaryGeneratedColumn('uuid')\n"
+            f"  id!: string;\n\n"
+            f"  // TODO: Add entity columns\n"
+            f"}}\n"
+        )
+    elif '.dto.' in filename:
+        return (
+            f"import {{ IsString, IsOptional }} from 'class-validator';\n\n"
+            f"export class {class_name} {{\n"
+            f"  // TODO: Define DTO properties with validation decorators\n"
+            f"}}\n"
+        )
+    elif '.guard.' in filename:
+        return (
+            f"import {{ Injectable, CanActivate, ExecutionContext }} from '@nestjs/common';\n\n"
+            f"@Injectable()\n"
+            f"export class {class_name} implements CanActivate {{\n"
+            f"  canActivate(context: ExecutionContext): boolean {{\n"
+            f"    // TODO: Implement guard logic\n"
+            f"    return true;\n"
+            f"  }}\n"
+            f"}}\n"
+        )
+    elif '.interceptor.' in filename:
+        return (
+            f"import {{ Injectable, NestInterceptor, ExecutionContext, CallHandler }} from '@nestjs/common';\n"
+            f"import {{ Observable }} from 'rxjs';\n\n"
+            f"@Injectable()\n"
+            f"export class {class_name} implements NestInterceptor {{\n"
+            f"  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {{\n"
+            f"    return next.handle();\n"
+            f"  }}\n"
+            f"}}\n"
+        )
+    elif '.middleware.' in filename:
+        return (
+            f"import {{ Injectable, NestMiddleware }} from '@nestjs/common';\n"
+            f"import {{ Request, Response, NextFunction }} from 'express';\n\n"
+            f"@Injectable()\n"
+            f"export class {class_name} implements NestMiddleware {{\n"
+            f"  use(req: Request, res: Response, next: NextFunction) {{\n"
+            f"    next();\n"
+            f"  }}\n"
+            f"}}\n"
+        )
+    elif '.interface.' in filename:
+        return (
+            f"// Interface for {project_name}\n\n"
+            f"export interface {class_name} {{\n"
+            f"  // TODO: Define interface properties\n"
+            f"}}\n"
+        )
+    elif '.config.' in filename:
+        return (
+            f"// Configuration for {project_name}\n\n"
+            f"export const {parts[0]}Config = {{\n"
+            f"  // TODO: Add configuration values\n"
+            f"}};\n"
+        )
+    else:
+        # Generic NestJS class
+        return (
+            f"// Auto-generated placeholder for {project_name}\n\n"
+            f"export class {class_name} {{\n"
+            f"  // TODO: Implement\n"
+            f"}}\n"
+        )
 
 
 def collect_fs_metadata(path: Path) -> Dict[str, Any]:
@@ -158,9 +362,12 @@ def apply_plan(plan: Dict[str, Any], project_root: Path, dry_run: bool) -> Tuple
 
         for rel_file in files:
             # FIX: Properly combine target_path with rel_file
-            # If rel_file already starts with target_path, don't duplicate it
-            if target_path and not rel_file.startswith(target_path):
-                full_path = f"{target_path.rstrip('/')}/{rel_file}"
+            # Handle "/" as project root, not filesystem root
+            # Strip leading "/" from target_path to make it relative
+            normalized_target = target_path.lstrip('/').rstrip('/')
+
+            if normalized_target and not rel_file.startswith(normalized_target):
+                full_path = f"{normalized_target}/{rel_file}"
             else:
                 full_path = rel_file
 

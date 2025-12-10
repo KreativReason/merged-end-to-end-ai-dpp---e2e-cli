@@ -2,7 +2,34 @@
 
 > From conversation to code, from code to compounding value.
 
-A unified development pipeline that transforms client interviews into production-ready projects with **Pydantic-validated artifacts**, **human approval gates**, and **deterministic scaffolding**.
+A Claude Code plugin that transforms client interviews into production-ready projects with **Pydantic-validated artifacts**, **human approval gates**, and **deterministic scaffolding**.
+
+## Installation
+
+### For Teams (Recommended)
+
+```bash
+# In Claude Code (from Cursor terminal or standalone)
+/plugin install github:KreativReason/merged-end-to-end-ai-dpp---e2e-cli
+```
+
+### From Local Clone
+
+```bash
+# Clone the repository
+git clone https://github.com/KreativReason/merged-end-to-end-ai-dpp---e2e-cli.git
+
+# Install in Claude Code
+/plugin install /path/to/merged-end-to-end-ai-dpp---e2e-cli
+```
+
+### Updates
+
+When improvements are pushed to GitHub:
+
+```bash
+/plugin update kreativreason-e2e-pipeline
+```
 
 ## What's Different About This System
 
@@ -17,16 +44,31 @@ A unified development pipeline that transforms client interviews into production
 ## Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/KreativReason/merged-end-to-end-ai-dpp---e2e-cli.git
-cd merged-end-to-end-ai-dpp---e2e-cli
+# 1. Install plugin (once)
+/plugin install github:KreativReason/merged-end-to-end-ai-dpp---e2e-cli
 
-# Install Python dependencies
-pip install pydantic
+# 2. Enable in your project
+/plugin enable kreativreason-e2e-pipeline
 
-# Use with Claude Code
-claude
+# 3. Run genesis (new project from interview)
+/kreativreason:genesis
+
+# Or development commands (existing project)
+/kreativreason:plan "Add user authentication"
+/kreativreason:work
+/kreativreason:review
 ```
+
+## Commands
+
+| Command | Purpose | When to Use |
+|---------|---------|-------------|
+| `/kreativreason:genesis` | Interview → PRD → ERD → Tasks → Project | Starting new project |
+| `/kreativreason:plan` | Create implementation plan | Planning feature/bugfix |
+| `/kreativreason:work` | Execute plan with testing | Implementing work |
+| `/kreativreason:review` | 11-agent code review | Before merging PRs |
+| `/kreativreason:triage` | Process review findings | After review |
+| `/kreativreason:handoff` | Genesis → Development transition | After scaffolding |
 
 ## Pipeline Phases
 
@@ -37,21 +79,21 @@ claude
 ```
 
 1. **Interview Transcript** → You provide the raw conversation
-2. **PRD Agent** → Generates Product Requirements → `lint_prd.py` validates → **Human Approval**
-3. **Flow Agent** → Generates User/System Flows → **Human Approval**
-4. **ERD Agent** → Generates Entity Relationships → `lint_erd.py` validates → **Human Approval**
-5. **Journey Agent** → Generates User Journeys
-6. **Planner Agent** → Breaks down into Tasks → **Human Approval**
-7. **ADR Agent** → Documents Architecture Decisions
-8. **Scaffolder Agent** → Creates project plan → **Human Approval**
+2. **PRD Agent** → Product Requirements → `lint_prd.py` validates → **Human Approval**
+3. **Flow Agent** → User/System Flows
+4. **ERD Agent** → Entity Relationships → `lint_erd.py` validates → **Human Approval**
+5. **Journey Agent** → User Journeys
+6. **Planner Agent** → Task Breakdown → **Human Approval**
+7. **ADR Agent** → Architecture Decisions
+8. **Scaffolder Agent** → Project Structure → **Human Approval**
 9. **scaffold_apply.py** → Generates actual files
 
 ### Phase 2: Development (Continuous)
 
-```
+```bash
 /kreativreason:plan "Add user authentication"
-/kreativreason:work plans/add-user-auth.md
-/kreativreason:review #123
+/kreativreason:work
+/kreativreason:review
 /kreativreason:triage
 ```
 
@@ -74,19 +116,9 @@ claude
 ```
 app/
 ├── models.py      # Pydantic schemas for all artifacts
-├── lint_prd.py    # PRD-specific validation rules
-├── lint_erd.py    # ERD-specific validation rules
-└── test_pipeline.py
+├── lint_prd.py    # PRD validation
+└── lint_erd.py    # ERD validation
 ```
-
-### Commands (6 workflows)
-
-- `genesis` - Full project creation pipeline
-- `plan` - Feature/task planning
-- `work` - Execute plans with testing
-- `review` - Multi-agent code review
-- `handoff` - Genesis → Development transition
-- `triage` - Process review findings
 
 ### Skills (8 capabilities)
 
@@ -99,17 +131,24 @@ app/
 - `compound-docs` - Pattern documentation
 - `skill-creator` - Create new skills
 
-## Validation Examples
+## Validation
 
 ```bash
-# Validate a PRD
+# Validate PRD
 python app/lint_prd.py docs/prd.json
 
-# Validate an ERD
+# Validate ERD
 python app/lint_erd.py docs/erd.json
 
-# Apply scaffold plan (after approval)
-python scripts/scaffold_apply.py docs/scaffold-plan.json
+# Apply scaffold (after approval)
+python scripts/scaffold_apply.py \
+  --plan docs/scaffold-plan.json \
+  --prd docs/prd.json \
+  --erd docs/erd.json \
+  --approved-by "ProductOwner" \
+  --approved-by "TechLead" \
+  --output docs/scaffold-applied.json \
+  --project-dir ~/Projects/new-app
 ```
 
 ## Stable ID Conventions
@@ -124,30 +163,29 @@ IDs are **never regenerated**. Once assigned, they're immutable:
 | ADRs | ADR-#### | ADR-0001 |
 | Entities | ENT-### | ENT-001 |
 
-## Project Isolation
-
-Generated projects live **outside** this CLI:
-
-```
-~/Projects/
-├── acme-app/           # Generated project
-├── client-portal/      # Generated project
-└── saas-platform/      # Generated project
-
-merged-e2e-pipeline/    # This CLI (stays lightweight)
-├── app/                # Validation layer
-├── agents/             # Agent definitions
-└── docs/               # Artifact storage
-```
-
 ## MCP Servers
 
+Automatically configured when plugin is enabled:
+
 - **Playwright**: Browser automation for screenshots and visual testing
-- **Context7**: Framework documentation lookup (Next.js, React, FastAPI, Django, Rails, Prisma, etc.)
+- **Context7**: Framework documentation lookup
+
+## Requirements
+
+- Claude Code CLI
+- Python 3.10+ with Pydantic (`pip install pydantic`)
+- Node.js 20+ (for generated projects)
+
+## Documentation
+
+- [SETUP.md](SETUP.md) - Installation and configuration
+- [USAGE_GUIDE.md](USAGE_GUIDE.md) - Step-by-step examples
+- [WORKFLOW.md](WORKFLOW.md) - Team collaboration patterns
+- [CLAUDE.md](CLAUDE.md) - Claude Code instructions
 
 ## License
 
-MIT
+UNLICENSED - Private team use only
 
 ## Author
 

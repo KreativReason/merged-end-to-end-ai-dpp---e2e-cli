@@ -1,242 +1,177 @@
-# Production Setup Guide
+# Setup Guide
 
-This guide explains how to install and use the merged E2E Pipeline in production.
+This guide explains how to install and configure the KreativReason E2E Pipeline for your team.
+
+---
+
+## Prerequisites
+
+- **Claude Code CLI** - Install from [claude.com](https://claude.com/claude-code)
+- **Python 3.10+** with Pydantic
+- **Node.js 20+** (for generated projects)
+- **Git** for version control
 
 ---
 
 ## Installation
 
-### Step 1: Clone the Repository
+### Option 1: Install from GitHub (Recommended for Teams)
 
 ```bash
-# Navigate to your projects directory
-cd ~/Projects
+# In Claude Code (run from Cursor terminal or standalone)
+/plugin install github:KreativReason/merged-end-to-end-ai-dpp---e2e-cli
+```
 
-# Clone the merged pipeline
+This installs the plugin globally. All team members with repo access can install the same way.
+
+### Option 2: Install from Local Clone
+
+```bash
+# 1. Clone the repository
 git clone https://github.com/KreativReason/merged-end-to-end-ai-dpp---e2e-cli.git
 cd merged-end-to-end-ai-dpp---e2e-cli
-```
 
-### Step 2: Install Python Dependencies
-
-```bash
+# 2. Install Python dependencies
 pip install pydantic
+
+# 3. Install plugin in Claude Code
+/plugin install /path/to/merged-end-to-end-ai-dpp---e2e-cli
 ```
 
-### Step 3: Configure Claude Code
+---
 
-Add the plugin to your Claude Code settings. Edit `~/.claude/settings.json`:
+## Plugin Management
 
-```json
-{
-  "plugins": [
-    "~/Projects/merged-end-to-end-ai-dpp---e2e-cli"
-  ]
-}
-```
+### Enable/Disable Per Project
 
-Alternatively, you can work directly from within the cloned directory.
-
-### Step 4: (Optional) Set Up MCP Servers
-
-The plugin supports two MCP servers for enhanced capabilities:
-
-**Playwright** (for screenshots and visual testing):
 ```bash
+# Enable in current project
+/plugin enable kreativreason-e2e-pipeline
+
+# Disable when not needed
+/plugin disable kreativreason-e2e-pipeline
+
+# Check status
+/plugin list
+```
+
+### Updates
+
+When improvements are pushed to GitHub:
+
+```bash
+/plugin update kreativreason-e2e-pipeline
+```
+
+Team members should run this periodically to get the latest agents, commands, and fixes.
+
+---
+
+## Verify Installation
+
+After installing, verify the plugin is working:
+
+```bash
+# List available commands
+/help
+
+# You should see:
+# /kreativreason:genesis
+# /kreativreason:plan
+# /kreativreason:work
+# /kreativreason:review
+# /kreativreason:triage
+# /kreativreason:handoff
+```
+
+---
+
+## MCP Servers
+
+The plugin configures two MCP servers automatically:
+
+### Playwright (Screenshots & Visual Testing)
+
+```bash
+# Verify Playwright MCP is available
 npx -y @playwright/mcp@latest
 ```
 
-**Context7** (for framework documentation lookup):
-- Configured automatically via `plugin.json`
-- Provides docs for Next.js, React, FastAPI, Django, Rails, Prisma, etc.
+Used for:
+- Design iteration screenshots
+- Visual regression testing
+- Browser automation
+
+### Context7 (Framework Documentation)
+
+Automatically configured. Provides documentation lookup for:
+- Next.js, React, Vue
+- FastAPI, Django, Rails
+- Prisma, TypeORM
+- And more
 
 ---
 
-## Two Ways to Use the Pipeline
+## Team Setup Workflow
 
-### Option A: Full Genesis Pipeline (New Projects)
+### For Team Lead / Admin
 
-Use this when starting a brand new project from a client interview.
+1. **Fork or clone** the repository to your organization
+2. **Configure** the GitHub repo URL in documentation
+3. **Share installation command** with team:
+   ```bash
+   /plugin install github:YourOrg/merged-end-to-end-ai-dpp---e2e-cli
+   ```
 
-```
-/kreativreason:genesis
-```
+### For Team Members
 
-**What you provide:**
-- Interview transcript (paste directly or provide path)
-- Project name
-- Output directory
-
-**What happens:**
-
-| Step | Agent | Output | Approval Required |
-|------|-------|--------|-------------------|
-| 1 | PRD | `docs/prd.json` | ✅ Yes (validated by `lint_prd.py`) |
-| 2 | Flow | `docs/flow.json` | No |
-| 3 | ERD | `docs/erd.json` | ✅ Yes (validated by `lint_erd.py`) |
-| 4 | Journey | `docs/journey.json` | No |
-| 5 | Planner | `docs/tasks.json` | ✅ Yes |
-| 6 | ADR | `docs/adr.json` | No |
-| 7 | Scaffolder | `docs/scaffold-plan.json` | ✅ Yes |
-| 8 | Build | Complete project directory | N/A |
-
-**Example:**
-
-```
-/kreativreason:genesis
-
-Interview transcript: interviews/client-call.md
-Project name: "BookEasy - Service Booking Platform"
-Output directory: ~/Projects/bookeasy
-```
-
-### Option B: Development Commands (Existing Projects)
-
-Use these commands on projects that already exist.
-
-#### Plan a Feature or Bugfix
-
-```
-/kreativreason:plan "Add user authentication with OAuth"
-```
-
-Creates a structured implementation plan with tasks.
-
-#### Execute a Plan
-
-```
-/kreativreason:work plans/add-auth.md
-```
-
-Executes the plan in an isolated git worktree with continuous testing.
-
-#### Code Review (11 Agents in Parallel)
-
-```
-/kreativreason:review #123
-```
-
-Runs 11 specialized reviewers:
-- Security Sentinel (OWASP, injection, auth)
-- Performance Oracle (N+1, memory, caching)
-- Architecture Strategist (ADR alignment, coupling)
-- Code Simplicity Reviewer (YAGNI, over-engineering)
-- Data Integrity Guardian (schema safety, migrations)
-- DHH Rails Reviewer (Rails conventions)
-- Kieran Rails/TypeScript/Python Reviewers (language-specific)
-- Julik Frontend Races Reviewer (async bugs)
-- Pattern Recognition Specialist (design patterns)
-
-#### Process Review Findings
-
-```
-/kreativreason:triage
-```
-
-Organizes review findings into actionable todos.
-
-#### Transition from Genesis to Development
-
-```
-/kreativreason:handoff
-```
-
-Sets up a generated project for ongoing development.
+1. **Ensure Claude Code access** - Get API key if needed
+2. **Run installation command** from team lead
+3. **Verify installation** with `/help`
+4. **Enable plugin** in projects with `/plugin enable kreativreason-e2e-pipeline`
 
 ---
 
-## Command Reference
+## Using with Cursor
 
-| Command | Purpose | When to Use |
-|---------|---------|-------------|
-| `/kreativreason:genesis` | Full pipeline: Interview → Project | Starting a new project |
-| `/kreativreason:plan` | Create implementation plan | Planning a feature or bugfix |
-| `/kreativreason:work` | Execute a plan | Implementing planned work |
-| `/kreativreason:review` | Multi-agent code review | Before merging PRs |
-| `/kreativreason:triage` | Organize review findings | After running review |
-| `/kreativreason:handoff` | Genesis → Development transition | After scaffolding completes |
+The plugin works in Claude Code launched from **any terminal**, including Cursor's integrated terminal:
+
+1. Open Cursor
+2. Open the integrated terminal (`Ctrl+`` ` or `Cmd+`` `)
+3. Run `claude` to start Claude Code
+4. Use plugin commands normally
 
 ---
 
-## Manual Validation Commands
+## Directory Structure
 
-Run these to validate artifacts outside of the pipeline:
-
-```bash
-# Validate PRD (run as module from repo root)
-python -m app.lint_prd docs/prd.json
-
-# Validate ERD (run as module from repo root)
-python -m app.lint_erd docs/erd.json
-
-# Apply scaffold plan manually (after approval)
-python scripts/scaffold_apply.py docs/scaffold-plan.json --output ~/Projects/new-app
-```
-
-**Note:** The validators must be run as Python modules (`-m`) from the repository root directory.
-
----
-
-## Project Structure After Genesis
-
-When you run the full genesis pipeline, your generated project looks like this:
+After installation, the plugin provides:
 
 ```
-~/Projects/new-app/
-├── src/                      # Application code
-├── tests/                    # Test suite
-├── .cursor/rules/            # Project-specific editor rules
-├── agents/                   # Project-specific agents
-│   ├── Coding.agent.md       # Implementation guidance
-│   ├── Feature.agent.md      # New feature workflow
-│   └── Bugfix.agent.md       # Bug fix workflow
-├── docs/                     # Specs copied from genesis
-│   ├── prd.json
-│   ├── erd.json
-│   └── ...
-├── README.md
-└── ...
+kreativreason-e2e-pipeline/
+├── commands/workflows/     # 6 slash commands
+│   ├── genesis.md
+│   ├── plan.md
+│   ├── work.md
+│   ├── review.md
+│   ├── triage.md
+│   └── handoff.md
+├── agents/                 # 35 specialized agents
+│   ├── genesis/           # PRD, ERD, Flow, etc.
+│   ├── development/       # Coding, Feature, Bugfix
+│   ├── review/            # 11 code reviewers
+│   ├── design/            # Figma, Visual QA
+│   ├── workflow/          # Linting, PR handling
+│   ├── research/          # Docs, Best practices
+│   └── docs/              # README generation
+├── skills/                 # 8 reusable capabilities
+├── app/                    # Python validation layer
+│   ├── models.py          # Pydantic schemas
+│   ├── lint_prd.py        # PRD validator
+│   └── lint_erd.py        # ERD validator
+└── scripts/
+    └── scaffold_apply.py  # Deterministic scaffolding
 ```
-
-The generated project has its own agents for ongoing development, so you can continue using AI-assisted workflows.
-
----
-
-## Using Individual Agents
-
-You can also invoke agents directly using the `@agent` syntax:
-
-```
-@agents/genesis/prd.md implement
-
-Generate PRD from client interview:
-- transcript_path: interviews/client-interview.md
-- project_name: "My App"
-```
-
-Available agent categories:
-- `agents/genesis/` - PRD, Flow, ERD, Journey, Planner, ADR, Scaffolder
-- `agents/development/` - Coding, Feature, Bugfix, Migration
-- `agents/review/` - 11 code review specialists
-- `agents/design/` - Figma sync, Design iterator, Implementation reviewer
-- `agents/workflow/` - Lint, PR resolver, Bug validator, Spec analyzer
-- `agents/research/` - Repo analyst, Best practices, Framework docs
-
----
-
-## Human Approval Gates
-
-The pipeline enforces human review at critical stages:
-
-| Stage | Reviewers | Validation Script |
-|-------|-----------|-------------------|
-| PRD Complete | Product Owner, Tech Lead | `app/lint_prd.py` |
-| ERD Complete | Tech Lead, DBA | `app/lint_erd.py` |
-| Tasks Complete | Product Owner, Lead Dev | Schema validation |
-| Scaffold Plan | Product Owner, Tech Lead | Schema validation |
-| Code Merge | Code Reviewer | Review agents |
-
-**Important:** The pipeline will not auto-advance past these gates. You must explicitly approve each stage.
 
 ---
 
@@ -244,63 +179,68 @@ The pipeline enforces human review at critical stages:
 
 ### "Plugin not found"
 
-Ensure the plugin path is correct in your Claude Code settings:
 ```bash
-ls ~/.claude/settings.json
-cat ~/.claude/settings.json | grep plugins
+# Check installed plugins
+/plugin list
+
+# Reinstall if needed
+/plugin install github:KreativReason/merged-end-to-end-ai-dpp---e2e-cli
 ```
 
-### "Validation failed"
+### "Command not found"
 
-Check the artifact against the schema:
 ```bash
-python app/lint_prd.py docs/prd.json
-# Or
-python app/lint_erd.py docs/erd.json
+# Ensure plugin is enabled
+/plugin enable kreativreason-e2e-pipeline
+
+# Refresh commands
+/help
 ```
 
-### "Agent not found"
+### "Pydantic validation failed"
 
-Verify agents exist:
 ```bash
-ls agents/genesis/
-ls agents/development/
-ls agents/review/
-```
-
-### "Pydantic not installed"
-
-Install the dependency:
-```bash
+# Install Pydantic
 pip install pydantic
+
+# Or with specific version
+pip install pydantic>=2.0
 ```
+
+### "Permission denied" on GitHub install
+
+Ensure you have access to the repository:
+- For private repos, authenticate with `gh auth login`
+- Or use local clone method
 
 ---
 
 ## Next Steps
 
-1. **Run a test genesis** with a sample interview to verify setup
-2. **Configure MCP servers** for design iteration capabilities
-3. **Review USAGE_GUIDE.md** for detailed step-by-step examples
-4. **Review WORKFLOW.md** for team collaboration patterns
+1. **Read [USAGE_GUIDE.md](USAGE_GUIDE.md)** for step-by-step examples
+2. **Run a test genesis** with a sample interview
+3. **Review [WORKFLOW.md](WORKFLOW.md)** for team collaboration patterns
 
 ---
 
-## Quick Start Example
+## Quick Reference
 
 ```bash
-# 1. Clone and setup
-git clone https://github.com/KreativReason/merged-end-to-end-ai-dpp---e2e-cli.git
-cd merged-end-to-end-ai-dpp---e2e-cli
-pip install pydantic
+# Install
+/plugin install github:KreativReason/merged-end-to-end-ai-dpp---e2e-cli
 
-# 2. Open Claude Code in this directory
-claude
+# Update
+/plugin update kreativreason-e2e-pipeline
 
-# 3. Run the genesis command
-/kreativreason:genesis
+# Enable/Disable
+/plugin enable kreativreason-e2e-pipeline
+/plugin disable kreativreason-e2e-pipeline
 
-# 4. Follow the prompts to provide interview transcript and project details
+# Commands
+/kreativreason:genesis      # New project from interview
+/kreativreason:plan         # Plan feature/bugfix
+/kreativreason:work         # Execute plan
+/kreativreason:review       # 11-agent code review
+/kreativreason:triage       # Process findings
+/kreativreason:handoff      # Genesis → Development
 ```
-
-That's it! The pipeline will guide you through each step with validation and approval gates.

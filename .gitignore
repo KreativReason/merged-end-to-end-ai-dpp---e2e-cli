@@ -1,3 +1,7 @@
 app/__pycache__/
 **/__pycache__/
 *.pyc
+
+# Project artifacts (generated from pipeline runs)
+# Each project gets its own folder under projects/
+projects/

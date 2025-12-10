@@ -58,9 +58,37 @@ merged-end-to-end-ai-dpp---e2e-cli/
 ├── skills/                   # 8 reusable capabilities
 ├── scripts/
 │   └── scaffold_apply.py     # Deterministic file generation
-├── docs/                     # Generated artifacts storage
+├── docs/                     # Sample/reference artifacts (committed)
+├── projects/                 # Generated project artifacts (gitignored)
+│   └── {project-name}/
+│       └── docs/             # PRD, Flow, ERD, Journey, Tasks, ADR, Scaffold
 ├── templates/                # Project scaffolding templates
 └── Makefile                  # Build targets
+```
+
+## Project Artifact Isolation
+
+**IMPORTANT**: All generated artifacts are stored in the `projects/` directory:
+- Each project gets its own subdirectory: `projects/{project-name}/docs/`
+- The `projects/` folder is gitignored to avoid committing test runs
+- Sample/reference files remain in `docs/` for documentation
+- This separation ensures clean git history and allows multiple concurrent projects
+
+Example project structure:
+```
+projects/
+├── solarai-core/
+│   └── docs/
+│       ├── prd-solarai.json
+│       ├── flow-solarai.json
+│       ├── erd-solarai.json
+│       ├── journey-solarai.json
+│       ├── tasks-solarai.json
+│       ├── adr-solarai.json
+│       └── scaffold-solarai.json
+└── another-project/
+    └── docs/
+        └── ...
 ```
 
 ## Commands Reference
@@ -86,14 +114,18 @@ merged-end-to-end-ai-dpp---e2e-cli/
 All genesis artifacts are validated against Pydantic schemas before proceeding:
 
 ```bash
-# Validate PRD
-python app/lint_prd.py docs/prd.json
+# Validate PRD (for a project)
+python -m app.lint_prd projects/{project-name}/docs/prd-{project}.json
 
-# Validate ERD
-python app/lint_erd.py docs/erd.json
+# Validate ERD (for a project)
+python -m app.lint_erd projects/{project-name}/docs/erd-{project}.json
 
 # Run scaffolding (after approval)
-python scripts/scaffold_apply.py docs/scaffold-plan.json
+python scripts/scaffold_apply.py projects/{project-name}/docs/scaffold-{project}.json
+
+# Example with SolarAI project:
+python -m app.lint_prd projects/solarai-core/docs/prd-solarai.json
+python -m app.lint_erd projects/solarai-core/docs/erd-solarai.json
 ```
 
 ### Pydantic Models (`app/models.py`)

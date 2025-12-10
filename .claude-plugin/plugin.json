@@ -1,7 +1,7 @@
 {
   "name": "kreativreason-e2e-pipeline",
   "version": "2.0.0",
-  "description": "Merged E2E Pipeline with Human-in-the-Loop validation. From client interview to production-ready project with Pydantic-validated artifacts, deterministic scaffolding, and continuous compounding development. 35 agents, 6 commands, 8 skills, 2 MCP servers, plus Python validation layer.",
+  "description": "Merged E2E Pipeline with Human-in-the-Loop validation. From client interview to production-ready project with Pydantic-validated artifacts, deterministic scaffolding, and continuous compounding development.",
   "author": {
     "name": "KreativReason",
     "email": "team@kreativreason.com",
@@ -9,159 +9,38 @@
   },
   "homepage": "https://github.com/KreativReason/merged-end-to-end-ai-dpp---e2e-cli",
   "repository": "https://github.com/KreativReason/merged-end-to-end-ai-dpp---e2e-cli",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "keywords": [
     "e2e-pipeline",
     "project-genesis",
     "scaffolding",
-    "compounding-engineering",
     "code-review",
     "prd",
     "erd",
     "adr",
-    "workflow-automation",
     "human-in-the-loop",
-    "ai-powered",
-    "pydantic-validation",
-    "deterministic-scaffolding",
-    "typescript",
-    "python",
-    "rails",
-    "ruby",
-    "nextjs",
-    "fastapi",
-    "figma",
-    "playwright",
-    "design-iteration"
+    "pydantic-validation"
+  ],
+  "commands": [
+    "./commands/workflows/"
+  ],
+  "agents": [
+    "./agents/genesis/",
+    "./agents/development/",
+    "./agents/review/",
+    "./agents/design/",
+    "./agents/workflow/",
+    "./agents/research/",
+    "./agents/docs/"
   ],
   "mcpServers": {
     "playwright": {
-      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"],
-      "env": {}
+      "args": ["-y", "@playwright/mcp@latest"]
     },
     "context7": {
       "type": "http",
       "url": "https://mcp.context7.com/mcp"
     }
-  },
-  "validation": {
-    "description": "Python/Pydantic validation layer for artifact integrity",
-    "models": "app/models.py",
-    "linters": {
-      "prd": "app/lint_prd.py",
-      "erd": "app/lint_erd.py"
-    },
-    "scaffolding": "scripts/scaffold_apply.py"
-  },
-  "agents": {
-    "genesis": {
-      "description": "Project creation pipeline agents (Pydantic-validated)",
-      "count": 8,
-      "list": ["prd", "flow", "erd", "journey", "planner", "adr", "scaffolder", "guardrails"]
-    },
-    "development": {
-      "description": "Ongoing development agents",
-      "count": 4,
-      "list": ["coding", "feature", "bugfix", "migration"]
-    },
-    "review": {
-      "description": "Multi-language code review specialists",
-      "count": 11,
-      "list": [
-        "security-sentinel",
-        "performance-oracle",
-        "architecture-strategist",
-        "code-simplicity-reviewer",
-        "data-integrity-guardian",
-        "dhh-rails-reviewer",
-        "kieran-rails-reviewer",
-        "kieran-typescript-reviewer",
-        "kieran-python-reviewer",
-        "julik-frontend-races-reviewer",
-        "pattern-recognition-specialist"
-      ]
-    },
-    "design": {
-      "description": "UI/UX design and iteration agents",
-      "count": 3,
-      "list": ["figma-design-sync", "design-iterator", "design-implementation-reviewer"]
-    },
-    "workflow": {
-      "description": "Development workflow automation",
-      "count": 5,
-      "list": ["bug-reproduction-validator", "lint", "pr-comment-resolver", "spec-flow-analyzer", "style-editor"]
-    },
-    "research": {
-      "description": "Codebase and documentation research",
-      "count": 3,
-      "list": ["repo-analyst", "best-practices-researcher", "framework-docs-researcher"]
-    },
-    "docs": {
-      "description": "Documentation generation",
-      "count": 1,
-      "list": ["readme-writer"]
-    }
-  },
-  "commands": {
-    "count": 6,
-    "list": ["genesis", "plan", "work", "review", "handoff", "triage"]
-  },
-  "skills": {
-    "count": 8,
-    "list": [
-      "git-worktree",
-      "file-todos",
-      "validation",
-      "artifact-sync",
-      "frontend-design",
-      "gemini-imagegen",
-      "compound-docs",
-      "skill-creator"
-    ]
-  },
-  "phases": {
-    "genesis": {
-      "description": "Project creation from interview to scaffolded codebase",
-      "commands": ["genesis", "handoff"],
-      "agents": ["prd", "flow", "erd", "journey", "planner", "adr", "scaffolder"],
-      "validation": "All artifacts validated against Pydantic schemas before approval gates"
-    },
-    "development": {
-      "description": "Continuous feature development and maintenance",
-      "commands": ["plan", "work"],
-      "agents": ["coding", "feature", "bugfix", "migration"]
-    },
-    "quality": {
-      "description": "Code review, design verification, and quality assurance",
-      "commands": ["review", "triage"],
-      "agents": [
-        "security-sentinel",
-        "performance-oracle",
-        "architecture-strategist",
-        "code-simplicity-reviewer",
-        "data-integrity-guardian",
-        "dhh-rails-reviewer",
-        "kieran-rails-reviewer",
-        "kieran-typescript-reviewer",
-        "kieran-python-reviewer",
-        "julik-frontend-races-reviewer",
-        "pattern-recognition-specialist",
-        "figma-design-sync",
-        "design-iterator",
-        "design-implementation-reviewer"
-      ]
-    }
-  },
-  "approvalGates": {
-    "description": "Human-in-the-loop checkpoints enforced by validation layer",
-    "gates": [
-      {"stage": "PRD Complete", "reviewers": ["Product Owner", "Tech Lead"], "validation": "lint_prd.py"},
-      {"stage": "ERD Complete", "reviewers": ["Tech Lead", "DBA"], "validation": "lint_erd.py"},
-      {"stage": "Tasks Complete", "reviewers": ["Product Owner", "Lead Dev"]},
-      {"stage": "Scaffold Plan", "reviewers": ["Product Owner", "Tech Lead"]},
-      {"stage": "Code Merge", "reviewers": ["Code Reviewer"]}
-    ]
   }
 }
