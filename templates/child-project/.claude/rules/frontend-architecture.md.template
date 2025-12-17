@@ -1,0 +1,646 @@
+# {{PROJECT_NAME}} Frontend Architecture Guide
+
+**{{PROJECT_NAME}} - Acquisition-Ready Architecture**
+
+This document defines the architectural patterns and conventions for the frontend codebase. **All developers and AI coding agents must follow these guidelines.**
+
+---
+
+## Table of Contents
+
+1. [Architecture Overview](#architecture-overview)
+2. [Directory Structure](#directory-structure)
+3. [Domain Structure](#domain-structure)
+4. [Import Rules](#import-rules)
+5. [Naming Conventions](#naming-conventions)
+6. [Component Patterns](#component-patterns)
+7. [Content Constants](#content-constants)
+8. [Code Quality Enforcement (Husky)](#code-quality-enforcement-husky)
+9. [Common Mistakes to Avoid](#common-mistakes-to-avoid)
+10. [Checklist for New Features](#checklist-for-new-features)
+
+---
+
+## Architecture Overview
+
+### Domain-Driven Organization
+
+This codebase is organized by **business domains** rather than technical layers:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    FRONTEND ARCHITECTURE                     │
+│                                                             │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐          │
+{{#each domains}}
+│  │{{pad name 9}}│
+{{/each}}
+│  └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘          │
+│       │           │           │           │                │
+│       └───────────┴─────┬─────┴───────────┘                │
+│                         │                                   │
+│              ┌──────────┴──────────┐                       │
+│              │       Shared        │                       │
+│              │  (Layout, Icons)    │                       │
+│              └─────────────────────┘                       │
+│                         │                                   │
+│              ┌──────────┴──────────┐                       │
+│              │    Components/UI    │                       │
+│              │  (Design System)    │                       │
+│              └─────────────────────┘                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Backend Alignment
+
+The frontend domain structure **mirrors the backend exactly**:
+
+| Frontend Domain | Backend Domain | Purpose |
+|-----------------|----------------|---------|
+{{#each domains}}
+| `domains/{{name}}` | `domains/{{name}}` | {{description}} |
+{{/each}}
+
+---
+
+## Directory Structure
+
+```
+src/
+├── domains/                    # Business domain modules
+{{#each domains}}
+│   ├── {{name}}/               # {{description}}
+│   │   ├── components/
+{{#each features}}
+│   │   │   └── {{this}}/       # {{this}} UI components
+{{/each}}
+│   │   ├── constants/          # Content constants (UI text)
+│   │   ├── hooks/              # Domain-specific hooks
+│   │   └── index.js            # Barrel export
+│   │
+{{/each}}
+│   └── index.js                # Central domain exports
+│
+├── shared/                     # Cross-cutting infrastructure
+│   ├── components/
+│   │   ├── layout/             # Header, Sidebar, Layout
+│   │   ├── icons/              # Shared icons
+│   │   └── ui/                 # Shared UI utilities
+│   └── index.js
+│
+├── components/                 # Design system ONLY
+│   └── ui/                     # Primitives: Button, Card, Modal, etc.
+│       ├── glass-card.tsx      # Glassmorphism card component
+│       ├── glass-badge.tsx     # Glassmorphism badge component
+│       ├── floating-orbs.tsx   # Background animation component
+│       └── ...
+│
+├── app/                        # Next.js App Router (thin wrappers)
+├── context/                    # React Context providers
+├── hooks/                      # Custom React hooks
+├── services/                   # API service layer
+├── types/                      # TypeScript types
+└── utils/                      # Utility functions
+```
+
+---
+
+## Domain Structure
+
+### What is a Domain?
+
+A domain is a **self-contained business module** that encapsulates:
+
+- Components (UI for this business area)
+- Hooks (domain-specific data fetching)
+- Types (domain-specific types)
+- Constants (UI text, labels, messages)
+
+### Feature Structure
+
+```
+domains/{domain}/
+├── components/
+│   ├── {feature}/
+│   │   ├── {feature}-name.jsx      # Main component
+│   │   ├── {feature}-helper.jsx    # Helper components
+│   │   └── index.js                # Feature barrel
+│   └── index.js                    # Components barrel
+├── constants/                      # Content constants (UI text)
+│   ├── {feature}.content.js        # Feature-specific content
+│   └── index.js                    # Constants barrel
+├── hooks/                          # Domain-specific hooks
+├── types/                          # Domain-specific types
+└── index.js                        # Domain barrel
+```
+
+### Barrel Export Pattern
+
+```javascript
+// domains/{domain}/components/{feature}/index.js
+export { FeatureView } from './{feature}-view'
+export { FeatureDetailDrawer } from './{feature}-detail-drawer'
+export { NewFeatureDrawer } from './new-{feature}-drawer'
+
+// domains/{domain}/constants/index.js
+export * from './{feature}.content'
+
+// domains/{domain}/components/index.js
+export * from './{feature-a}'
+export * from './{feature-b}'
+
+// domains/{domain}/index.js
+export * from './components'
+export * from './constants' // Include content constants in domain barrel
+```
+
+---
+
+## Import Rules
+
+### REQUIRED: Import via Barrel Exports
+
+```javascript
+// CORRECT - Import from domain's public API
+import { FeatureView, FeatureDetailDrawer } from '@/domains/{domain}'
+import { OtherComponent } from '@/domains/{other-domain}'
+import { Header, Sidebar } from '@/shared'
+import { Button, Card, Modal, GlassCard } from '@/components/ui'
+```
+
+### FORBIDDEN: Internal Path Imports
+
+```javascript
+// FORBIDDEN - Never reach into domain internals
+import { FeatureView } from '@/domains/{domain}/components/{feature}/{feature}-view'
+
+// FORBIDDEN - Legacy locations no longer supported
+import { Something } from '@/components/layout/...'
+import { Something } from '@/components/dashboard/...'
+```
+
+### Dependency Direction
+
+```
+app/ (pages) → domains/ → shared/ → components/ui/
+                  ↓
+              services/
+```
+
+**Rules:**
+
+1. Pages import from domains
+2. Domains can import from other domains via barrels
+3. Domains can import from shared/
+4. shared/ can import from components/ui/
+5. **NEVER**: components/ui/ importing from domains (circular!)
+
+---
+
+## Naming Conventions
+
+### File Names: kebab-case
+
+```
+feature-view.jsx
+feature-detail-drawer.jsx
+data-table.jsx
+```
+
+### Component Names: PascalCase
+
+```javascript
+export function FeatureView() { ... }
+export function FeatureDetailDrawer() { ... }
+```
+
+### Exports: Named Exports Only
+
+```javascript
+// CORRECT - Named exports in barrels
+export { FeatureView } from './{feature}-view'
+export { FeatureModal } from './{feature}-modal'
+
+// FORBIDDEN - Default exports in barrels
+export default FeatureView // NEVER in index.js
+```
+
+### Functions: camelCase
+
+```javascript
+const handleSubmit = () => { ... }
+const fetchData = async () => { ... }
+const searchItems = async () => { ... }
+```
+
+---
+
+## Component Patterns
+
+### Container + Presentational
+
+```
+Feature.jsx       - Container (data fetching, auth, state)
+FeatureView.jsx   - Presentational (UI only, receives props)
+```
+
+**Container (like Backend Controller):**
+
+- Handles authentication context
+- Fetches data from services
+- Manages state
+- Calls services for mutations
+
+**Presentational (like Backend Service):**
+
+- Pure UI rendering
+- Receives data via props
+- Emits events via callbacks
+- No direct service calls
+
+### Example
+
+```javascript
+// {feature}-drawer.jsx (Container)
+'use client'
+import { useAuth } from '@/hooks/useAuth'
+import { useFeatureSearch } from '../hooks/use-{feature}-search'
+import { ItemCard } from './item-card'
+
+export function FeatureDrawer({ resourceId }) {
+  const { user } = useAuth()
+  const { items, loading, search } = useFeatureSearch()
+
+  const handleSearch = params => {
+    search({ ...params, tenantId: user.tenant_id })
+  }
+
+  return (
+    <div className="feature-drawer">
+      <SearchForm onSearch={handleSearch} />
+      {items?.map(item => (
+        <ItemCard key={item.id} item={item} />
+      ))}
+    </div>
+  )
+}
+
+// item-card.jsx (Presentational)
+export function ItemCard({ item, onSelect }) {
+  return (
+    <div className="item-card">
+      <h3>{item.name}</h3>
+      <ActionButton onClick={onSelect} />
+    </div>
+  )
+}
+```
+
+### Keep Pages Thin
+
+```javascript
+// app/{domain}/{feature}/page.jsx
+import { Feature } from '@/domains/{domain}'
+
+export default function FeaturePage() {
+  return <Feature />
+}
+```
+
+---
+
+## Content Constants
+
+### Why Content Constants?
+
+**No hardcoded text in components.** All UI text, labels, and static content should live in structured constant files. This:
+
+1. Makes content easily updatable without touching component logic
+2. Enables future CMS/i18n integration (same structure, swap source)
+3. Keeps components lightweight and focused on UI logic
+4. Allows component reuse with different content
+
+### Content File Structure
+
+```javascript
+// domains/{domain}/constants/{feature}.content.js
+
+export const featureContent = {
+  // Page metadata
+  meta: {
+    title: 'Feature Title',
+    description: 'Feature description',
+  },
+
+  // Empty state
+  emptyState: {
+    heading: 'No items found',
+    description: "You don't have any items yet.",
+    actionLabel: 'Create Item',
+  },
+
+  // Error state
+  errorState: {
+    heading: 'Failed to load items',
+    description: 'There was an error loading your items.',
+    retryLabel: 'Try Again',
+  },
+
+  // Loading state
+  loadingState: {
+    message: 'Loading items...',
+  },
+
+  // Actions/Buttons
+  actions: {
+    create: 'New Item',
+    refresh: 'Refresh',
+    export: 'Export',
+    filter: 'Filter',
+  },
+
+  // Field labels
+  labels: {
+    name: 'Name',
+    status: 'Status',
+    date: 'Date',
+  },
+
+  // Table headers
+  tableHeaders: {
+    name: 'Item Name',
+    status: 'Status',
+    actions: 'Actions',
+  },
+
+  // Placeholders
+  placeholders: {
+    search: 'Search for items...',
+    selectDate: 'Select a date',
+  },
+
+  // Confirmations
+  confirmations: {
+    delete: 'Are you sure you want to delete this item?',
+    cancel: 'Are you sure you want to cancel?',
+  },
+
+  // Success messages
+  success: {
+    created: 'Item created successfully',
+    updated: 'Item updated successfully',
+    deleted: 'Item deleted successfully',
+  },
+
+  // Validation messages
+  validation: {
+    nameRequired: 'Name is required',
+    invalidFormat: 'Invalid format',
+  },
+}
+```
+
+### Using Content in Components
+
+```javascript
+// domains/{domain}/components/{feature}/{feature}-view.jsx
+import { Button } from '@/components/ui/button'
+import { featureContent } from '../../constants'
+
+export function FeatureView({ items, loading, error, onRefresh, onCreate }) {
+  const { meta, emptyState, errorState, loadingState, actions } = featureContent
+
+  if (loading) return <div>{loadingState.message}</div>
+
+  if (error) {
+    return (
+      <div>
+        <h2>{errorState.heading}</h2>
+        <p>{errorState.description}</p>
+        <Button onClick={onRefresh}>{errorState.retryLabel}</Button>
+      </div>
+    )
+  }
+
+  if (items.length === 0) {
+    return (
+      <div>
+        <h2>{emptyState.heading}</h2>
+        <p>{emptyState.description}</p>
+        <Button onClick={onCreate}>{emptyState.actionLabel}</Button>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <h1>{meta.title}</h1>
+      <Button onClick={onCreate}>{actions.create}</Button>
+      <Button onClick={onRefresh}>{actions.refresh}</Button>
+      {/* Feature UI */}
+    </div>
+  )
+}
+```
+
+### Content Categories Reference
+
+| Category | Purpose | Example Keys |
+|----------|---------|--------------|
+| `meta` | Page/section metadata | `title`, `description` |
+| `emptyState` | No data states | `heading`, `description`, `actionLabel` |
+| `errorState` | Error states | `heading`, `description`, `retryLabel` |
+| `loadingState` | Loading states | `message` |
+| `actions` | Button labels | `create`, `edit`, `delete`, `save`, `cancel` |
+| `labels` | Field labels | `name`, `email`, `status`, `date` |
+| `tableHeaders` | Table column headers | Column names |
+| `placeholders` | Input placeholders | `search`, `select`, `enter` |
+| `confirmations` | Confirmation dialogs | `delete`, `cancel`, `submit` |
+| `success` | Success messages | `created`, `updated`, `deleted` |
+| `validation` | Validation errors | `required`, `invalid`, `tooLong` |
+
+---
+
+## Code Quality Enforcement (Husky)
+
+### Overview
+
+We use **Husky** + **lint-staged** to enforce code standards before commits. Developers **cannot commit code** that violates our standards.
+
+### What Gets Checked
+
+| Check | What it does |
+|-------|--------------|
+| `eslint` | Enforces code style and catches errors |
+| `prettier` | Formats code consistently |
+| `tsc` | TypeScript type checking |
+| Import order | Ensures consistent import organization |
+
+### Pre-commit Flow
+
+```
+Developer runs: git commit -m "feat: add feature"
+                    ↓
+            Husky triggers pre-commit hook
+                    ↓
+            lint-staged runs on staged files
+                    ↓
+        ┌───────────────────────────────┐
+        │  1. ESLint check              │
+        │  2. Prettier format           │
+        │  3. TypeScript check          │
+        │  4. Auto-fix what's possible  │
+        └───────────────────────────────┘
+                    ↓
+            ┌──────┴──────┐
+            │             │
+         PASS          FAIL
+            │             │
+      Commit succeeds   Commit blocked
+                          │
+                    Developer must fix
+                    issues before committing
+```
+
+---
+
+## Common Mistakes to Avoid
+
+### 1. Importing from Internal Paths
+
+```javascript
+// WRONG
+import { FeatureView } from '@/domains/{domain}/components/{feature}/FeatureView'
+
+// CORRECT
+import { FeatureView } from '@/domains/{domain}'
+```
+
+### 2. Business Components in components/ui/
+
+```javascript
+// WRONG - FeatureTable is business logic
+src/components/ui/FeatureTable.jsx
+
+// CORRECT - In its domain
+src/domains/{domain}/components/{feature}-table.jsx
+```
+
+### 3. Default Exports in Barrels
+
+```javascript
+// WRONG
+export default FeatureView
+
+// CORRECT
+export { FeatureView } from './{feature}-view'
+```
+
+### 4. Cross-Domain Internal Imports
+
+```javascript
+// WRONG - Reaching into another domain's internals
+import { something } from '@/domains/{domain}/components/internal/helper'
+
+// CORRECT - Via barrel
+import { something } from '@/domains/{domain}'
+```
+
+### 5. PascalCase File Names
+
+```javascript
+// WRONG
+FeatureView.jsx
+FeatureDetailDrawer.jsx
+
+// CORRECT
+feature-view.jsx
+feature-detail-drawer.jsx
+```
+
+### 6. Missing Tenant Context
+
+```javascript
+// WRONG - API call without tenant context
+const items = await api.search({ resourceId })
+
+// CORRECT - Include tenant from auth context
+const items = await api.search({ resourceId, tenantId: user.tenant_id })
+```
+
+### 7. Hardcoded Text in Components
+
+```javascript
+// WRONG
+<Button>Create New Item</Button>
+<p>No items found</p>
+
+// CORRECT
+import { featureContent } from '../../constants'
+<Button>{featureContent.actions.create}</Button>
+<p>{featureContent.emptyState.heading}</p>
+```
+
+---
+
+## Checklist for New Features
+
+Before adding any new feature:
+
+- [ ] Identify the correct domain (matches backend domain)
+- [ ] Create component in domain's components folder
+- [ ] Use kebab-case for file names
+- [ ] Use named exports only (no default exports in index.js)
+- [ ] Add barrel exports to all index.js files
+- [ ] Follow Container + Presentational pattern
+- [ ] **Create content constants file** (`domains/{domain}/constants/{feature}.content.js`)
+- [ ] **No hardcoded text in components** - use content constants
+- [ ] **Include all states**: empty, error, loading in content
+- [ ] Keep pages thin (import from domain, render)
+- [ ] Handle all API response formats
+- [ ] Include tenant context in API calls
+- [ ] Cross-domain calls use barrel imports only
+- [ ] Use glassmorphism UI components (GlassCard, GlassBadge) per design system
+
+---
+
+## Guidelines Summary
+
+1. **All business logic** → `domains/{domain}/`
+2. **UI primitives only** → `components/ui/`
+3. **Truly shared utilities** → `shared/`
+4. **Pages are thin wrappers** → Import from domains
+5. **No backwards dependencies** → Domains never import from pages
+6. **Named exports only** → No default exports in barrels
+7. **kebab-case files** → PascalCase components
+8. **Match backend domains** → Frontend domains mirror backend exactly
+9. **Include tenant context** → All API calls scoped to tenant
+10. **No hardcoded text** → Use content constants for all UI text
+
+---
+
+## Project-Specific Domains
+
+This project has the following domains:
+
+{{#each domains}}
+### {{name}}
+
+- **Description**: {{description}}
+- **Features**: {{features}}
+
+{{/each}}
+
+---
+
+## Related Documentation
+
+- `.claude/rules/backend-architecture.md` - Backend architecture (mirrors this structure)
+- `.claude/rules/design-system.md` - UI design system
+- `CLAUDE.md` - Quick reference for AI agents
+
+---
+
+*This architecture guide was generated by the KreativReason E2E Pipeline.*
+*Architecture Style: {{ARCHITECTURE_STYLE}}*
+*Generated: {{GENERATED_AT}}*

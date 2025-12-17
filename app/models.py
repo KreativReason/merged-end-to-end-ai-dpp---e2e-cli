@@ -74,6 +74,212 @@ class TouchpointType(str, Enum):
     SUPPORT = "support"
 
 
+class DesignPreset(str, Enum):
+    """Design color presets for generated projects."""
+    CREATIVE = "creative"      # Blue + Red + Violet accents
+    CORPORATE = "corporate"    # Teal Green
+    NEUTRAL = "neutral"        # White + Red + Blue, gray tones
+    CUSTOM = "custom"          # Client-specified colors
+
+
+class ArchitectureStyle(str, Enum):
+    """Architecture patterns for generated projects."""
+    MODULAR_MONOLITH = "modular_monolith"  # Default: Domain-driven with modules
+    MICROSERVICES = "microservices"         # Service-oriented
+    LAYERED = "layered"                     # Traditional layers
+
+
+# ============================================================================
+# Domain Mapping Models (for Propose-Validate-Confirm pattern)
+# ============================================================================
+
+class DomainSchema(BaseModel):
+    """
+    Represents a bounded context/domain in the modular monolith.
+    Used for grouping related entities into cohesive modules.
+
+    The Propose-Validate-Confirm pattern:
+    1. AI proposes domain groupings based on PRD context
+    2. Aggregate root convention validates each domain has one entry point
+    3. Human confirms the domain map before scaffolding
+    """
+    name: str = Field(..., min_length=2, max_length=50, description="Domain name in kebab-case, e.g., 'sales', 'user-management'")
+    description: str = Field(..., min_length=10, description="Business purpose of this domain")
+    root_entity: str = Field(..., pattern=r"^ENT-\d{3}$", description="Aggregate root entity ID - the domain's entry point")
+    entities: List[str] = Field(..., min_items=1, description="List of entity IDs belonging to this domain")
+    feature_ids: List[str] = Field(default_factory=list, description="PRD features this domain implements")
+    dependencies: List[str] = Field(default_factory=list, description="Other domain names this domain depends on")
+
+    @field_validator('name', mode='after')
+    def validate_kebab_case(cls, v):
+        """Ensure domain name is kebab-case."""
+        import re
+        if not re.match(r'^[a-z][a-z0-9]*(-[a-z0-9]+)*$', v):
+            raise ValueError(f"Domain name must be kebab-case: {v}")
+        return v
+
+
+class DomainMapping(BaseModel):
+    """
+    Complete domain map for a project.
+    Generated during PRD→ERD phase, validated before scaffolding.
+    """
+    domains: List[DomainSchema] = Field(..., min_items=1, description="All domains in the project")
+    shared_entities: List[str] = Field(default_factory=list, description="Entity IDs shared across domains")
+    dependency_graph: Dict[str, List[str]] = Field(default_factory=dict, description="Domain dependency relationships")
+
+    @field_validator('domains', mode='after')
+    def validate_unique_domain_names(cls, v):
+        """Ensure domain names are unique."""
+        names = [d.name for d in v]
+        if len(names) != len(set(names)):
+            raise ValueError("Domain names must be unique")
+        return v
+
+    @field_validator('domains', mode='after')
+    def validate_no_circular_dependencies(cls, v):
+        """Detect circular dependencies between domains."""
+        # Build dependency graph
+        deps = {d.name: d.dependencies for d in v}
+
+        def has_cycle(node, visited, rec_stack):
+            visited.add(node)
+            rec_stack.add(node)
+            for neighbor in deps.get(node, []):
+                if neighbor not in visited:
+                    if has_cycle(neighbor, visited, rec_stack):
+                        return True
+                elif neighbor in rec_stack:
+                    return True
+            rec_stack.remove(node)
+            return False
+
+        visited = set()
+        for domain in v:
+            if domain.name not in visited:
+                if has_cycle(domain.name, visited, set()):
+                    raise ValueError(f"Circular dependency detected involving domain: {domain.name}")
+        return v
+
+
+# ============================================================================
+# Design Brief Models (for UI/UX configuration)
+# ============================================================================
+
+class ColorScheme(BaseModel):
+    """Color configuration for the design system."""
+    primary: str = Field(..., pattern=r"^#[0-9a-fA-F]{6}$", description="Primary brand color in hex")
+    secondary: Optional[str] = Field(None, pattern=r"^#[0-9a-fA-F]{6}$", description="Secondary color")
+    accent: List[str] = Field(default_factory=list, description="Accent colors in hex")
+    background: str = Field(default="#ffffff", pattern=r"^#[0-9a-fA-F]{6}$")
+    surface: str = Field(default="#f8f9fa", pattern=r"^#[0-9a-fA-F]{6}$")
+    text_primary: str = Field(default="#1a1a1a", pattern=r"^#[0-9a-fA-F]{6}$")
+    text_secondary: str = Field(default="#6b7280", pattern=r"^#[0-9a-fA-F]{6}$")
+    success: str = Field(default="#10b981", pattern=r"^#[0-9a-fA-F]{6}$")
+    warning: str = Field(default="#f59e0b", pattern=r"^#[0-9a-fA-F]{6}$")
+    error: str = Field(default="#ef4444", pattern=r"^#[0-9a-fA-F]{6}$")
+
+
+class GlassmorphismConfig(BaseModel):
+    """Glassmorphism UI configuration."""
+    enabled: bool = Field(default=True, description="Whether to use glassmorphism effects")
+    blur_intensity: str = Field(default="xl", pattern=r"^(sm|md|lg|xl|2xl|3xl)$")
+    opacity: float = Field(default=0.7, ge=0.1, le=1.0, description="Background opacity for glass effect")
+    border_opacity: float = Field(default=0.3, ge=0.1, le=1.0)
+    shadow_color_opacity: float = Field(default=0.1, ge=0.0, le=0.5)
+    floating_orbs: bool = Field(default=True, description="Include FloatingOrbs background component")
+
+
+class TypographyConfig(BaseModel):
+    """Typography configuration."""
+    font_family_heading: str = Field(default="Inter", description="Font for headings")
+    font_family_body: str = Field(default="Inter", description="Font for body text")
+    font_family_mono: str = Field(default="JetBrains Mono", description="Font for code")
+    base_size: str = Field(default="16px")
+    scale_ratio: float = Field(default=1.25, ge=1.0, le=2.0, description="Type scale ratio")
+
+
+class DesignBrief(BaseModel):
+    """
+    Complete design system configuration for a generated project.
+    Captured during PRD generation if not specified in interview.
+
+    Preset color schemes:
+    - CREATIVE: Blue (#3b82f6) + Red (#ef4444) + Violet (#8b5cf6) - for creative apps
+    - CORPORATE: Teal Green (#14b8a6) - for business/enterprise apps
+    - NEUTRAL: White/Gray + Red/Blue patches - for minimal/neutral apps
+    - CUSTOM: Client-specified colors
+    """
+    preset: DesignPreset = Field(default=DesignPreset.NEUTRAL, description="Color preset to use")
+    colors: ColorScheme = Field(default_factory=ColorScheme)
+    glassmorphism: GlassmorphismConfig = Field(default_factory=GlassmorphismConfig)
+    typography: TypographyConfig = Field(default_factory=TypographyConfig)
+    dark_mode_support: bool = Field(default=True)
+    responsive_breakpoints: Dict[str, str] = Field(
+        default_factory=lambda: {
+            "sm": "640px",
+            "md": "768px",
+            "lg": "1024px",
+            "xl": "1280px",
+            "2xl": "1536px"
+        }
+    )
+    component_style: str = Field(
+        default="rounded",
+        pattern=r"^(rounded|sharp|pill)$",
+        description="Border radius style for components"
+    )
+
+    @classmethod
+    def from_preset(cls, preset: DesignPreset) -> "DesignBrief":
+        """Factory method to create DesignBrief from preset."""
+        presets = {
+            DesignPreset.CREATIVE: ColorScheme(
+                primary="#3b82f6",      # Blue
+                secondary="#8b5cf6",    # Violet
+                accent=["#ef4444", "#8b5cf6"],  # Red + Violet
+                background="#ffffff",
+                surface="#f0f9ff",
+                text_primary="#1e3a5f",
+                text_secondary="#64748b"
+            ),
+            DesignPreset.CORPORATE: ColorScheme(
+                primary="#14b8a6",      # Teal Green
+                secondary="#0d9488",
+                accent=["#0891b2"],
+                background="#ffffff",
+                surface="#f0fdfa",
+                text_primary="#134e4a",
+                text_secondary="#64748b"
+            ),
+            DesignPreset.NEUTRAL: ColorScheme(
+                primary="#6b7280",       # Gray
+                secondary="#3b82f6",     # Blue
+                accent=["#ef4444", "#3b82f6"],  # Red + Blue patches
+                background="#ffffff",
+                surface="#f9fafb",
+                text_primary="#1f2937",
+                text_secondary="#6b7280"
+            )
+        }
+
+        if preset == DesignPreset.CUSTOM:
+            return cls(preset=preset)
+
+        return cls(preset=preset, colors=presets.get(preset, presets[DesignPreset.NEUTRAL]))
+
+
+class DesignBriefModel(BaseModel):
+    """Artifact wrapper for design brief."""
+    artifact_type: str = Field(default="design_brief")
+    status: str = Field(default="complete")
+    validation: ValidationStatus
+    approval_required: bool = Field(default=True)
+    approvers: List[str] = Field(default=["Cynthia", "Hermann"])
+    next_phase: str = Field(default="scaffolding")
+    data: DesignBrief
+
+
 # ============================================================================
 # PRD Models
 # ============================================================================
@@ -602,11 +808,48 @@ class ScaffoldPlanData(BaseModel):
     version: str = Field(default="1.0.0")
     created_at: datetime
     mode: str = Field(default="plan")
+
+    # Architecture configuration
+    architecture_style: ArchitectureStyle = Field(
+        default=ArchitectureStyle.MODULAR_MONOLITH,
+        description="Architecture pattern for the project"
+    )
+    domain_mapping: DomainMapping = Field(
+        ...,
+        description="Domain structure - entities grouped into bounded contexts"
+    )
+
+    # Design system configuration
+    design_brief: DesignBrief = Field(
+        default_factory=DesignBrief,
+        description="UI/UX design system configuration"
+    )
+
+    # Feature selections (tech stack)
     feature_selections: FeatureSelections
     templates_to_apply: List[TemplateApplication] = Field(..., min_items=1)
     directory_structure: Dict[str, str] = Field(..., min_items=1)
     dependencies: Dict[str, List[str]] = Field(..., min_items=1)
     environment_variables: List[EnvironmentVariable] = Field(default_factory=list)
+
+    # Child project injection configuration
+    inject_architecture_rules: bool = Field(
+        default=True,
+        description="Inject .claude/rules/ files into generated project"
+    )
+    inject_husky: bool = Field(
+        default=True,
+        description="Inject Husky + lint-staged for commit hooks"
+    )
+    inject_eslint_config: bool = Field(
+        default=True,
+        description="Inject ESLint config with barrel import rules"
+    )
+    inject_design_system: bool = Field(
+        default=True,
+        description="Inject glassmorphism UI components"
+    )
+
     next_steps: List[str] = Field(..., min_items=1)
     estimated_setup_time: str = Field(..., min_length=3)
 
@@ -736,33 +979,40 @@ class ErrorModel(BaseModel):
 # ============================================================================
 
 __all__ = [
+    # Domain Mapping (Propose-Validate-Confirm pattern)
+    'DomainSchema', 'DomainMapping',
+
+    # Design Brief (UI/UX configuration)
+    'DesignBrief', 'DesignBriefModel', 'ColorScheme', 'GlassmorphismConfig', 'TypographyConfig',
+
     # PRD
     'PRDModel', 'PRDData', 'Feature', 'UserStory', 'TechnicalRequirement',
-    
+
     # Flow
     'FlowModel', 'FlowData', 'UserFlow', 'SystemFlow', 'FlowStep',
-    
+
     # ERD
     'ERDModel', 'ERDData', 'Entity', 'Relationship', 'EntityAttribute', 'EntityIndex',
-    
+
     # Journey
     'JourneyModel', 'JourneyData', 'Journey', 'JourneyPhase', 'Touchpoint', 'Persona',
-    
+
     # Tasks
     'TasksModel', 'TasksData', 'Task', 'Epic', 'Sprint', 'TaskDependency', 'ContextPlan', 'TestingStrategy',
-    
+
     # ADR
     'ADRModel', 'ADRData', 'Decision', 'DecisionMetadata', 'IndexEntry', 'Alternative', 'DecisionContext',
-    
+
     # Scaffold
     'ScaffoldPlanModel', 'ScaffoldPlanData', 'TemplateApplication', 'FeatureSelections',
-    
+
     # Implementation
     'ImplementationModel', 'ImplementationData', 'FileChange', 'TestResult',
-    
+
     # Error
     'ErrorModel',
-    
+
     # Enums
-    'PriorityLevel', 'TaskType', 'ADRStatus', 'ValidationStatus', 'EmotionalState', 'TouchpointType'
+    'PriorityLevel', 'TaskType', 'ADRStatus', 'ValidationStatus', 'EmotionalState', 'TouchpointType',
+    'DesignPreset', 'ArchitectureStyle'
 ]

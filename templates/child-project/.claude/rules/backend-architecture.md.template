@@ -1,0 +1,640 @@
+# {{PROJECT_NAME}} Backend Architecture Guide
+
+This document defines the architectural patterns, conventions, and best practices for the {{PROJECT_NAME}} backend codebase. **All developers and AI coding agents must follow these guidelines.**
+
+## Table of Contents
+
+1. [Architecture Overview](#architecture-overview)
+2. [Directory Structure](#directory-structure)
+3. [Domain Structure](#domain-structure)
+4. [Module Boundary Rules](#module-boundary-rules)
+5. [Controller + Service Pattern](#controller--service-pattern)
+6. [Security Requirements](#security-requirements)
+7. [Data Access Patterns](#data-access-patterns)
+8. [Naming Conventions](#naming-conventions)
+9. [Import Rules](#import-rules)
+10. [Common Mistakes to Avoid](#common-mistakes-to-avoid)
+11. [Checklist for New Features](#checklist-for-new-features)
+
+---
+
+## Architecture Overview
+
+### Modular Monolith
+
+The backend is organized as a **Modular Monolith** - a single deployable application with strongly enforced module boundaries.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    MODULAR MONOLITH                         │
+│                    (Single Deployment)                      │
+│                                                             │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐          │
+{{#each domains}}
+│  │{{pad name 9}}│
+{{/each}}
+│  └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘          │
+│       │           │           │           │                │
+│       └───────────┴─────┬─────┴───────────┘                │
+│                         │                                   │
+│              ┌──────────┴──────────┐                       │
+│              │   Infrastructure    │                       │
+│              │  (DB, Storage, etc) │                       │
+│              └─────────────────────┘                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Frontend Alignment
+
+The backend domain structure **mirrors the frontend exactly**:
+
+| Frontend Domain | Backend Domain | Purpose |
+|-----------------|----------------|---------|
+{{#each domains}}
+| `domains/{{name}}` | `domains/{{name}}` | {{description}} |
+{{/each}}
+
+---
+
+## Directory Structure
+
+```
+src/
+├── domains/                      # Business modules (mirrors frontend)
+{{#each domains}}
+│   ├── {{name}}/                 # {{description}}
+│   │   ├── index.ts              # Barrel export
+│   │   └── features/
+{{#each features}}
+│   │       ├── {{this}}/
+│   │       │   ├── index.ts
+│   │       │   ├── {{this}}.controller.ts
+│   │       │   ├── {{this}}.service.ts
+│   │       │   └── {{this}}.schema.ts
+{{/each}}
+│   │
+{{/each}}
+├── infrastructure/               # External services & integrations
+│   ├── database/                 # Database connection (Prisma)
+│   │   ├── prisma.ts
+│   │   └── index.ts
+│   ├── storage/                  # File storage ({{STORAGE_PROVIDER}})
+│   │   ├── storage.service.ts
+│   │   └── index.ts
+│   ├── email/                    # Email service
+│   │   ├── email.service.ts
+│   │   └── index.ts
+│   └── index.ts
+│
+├── middleware/                   # Express middleware
+│   ├── auth.middleware.ts        # Authentication
+│   ├── tenant.middleware.ts      # Tenant isolation
+│   ├── permission.middleware.ts  # Authorization
+│   └── index.ts
+│
+├── validators/                   # Zod schemas
+├── utils/                        # Utility functions
+├── types/                        # TypeScript types
+└── index.ts                      # Application entry point
+```
+
+---
+
+## Domain Structure
+
+### What is a Domain?
+
+A domain is a **self-contained business module** that encapsulates:
+
+- Controllers (request handling)
+- Services (business logic)
+- Schemas (Zod validation)
+- Types/interfaces
+
+### Feature Structure
+
+Each feature within a domain follows this pattern:
+
+```
+domains/{domain}/features/{feature}/
+├── index.ts                    # Barrel export
+├── {feature}.controller.ts     # HTTP request handling
+├── {feature}.service.ts        # Business logic
+├── {feature}.schema.ts         # Zod validation schemas
+└── {feature}.types.ts          # TypeScript types (optional)
+```
+
+### Barrel Export Pattern
+
+```typescript
+// domains/{domain}/features/{feature}/index.ts
+export { FeatureService } from './{feature}.service'
+export * as featureController from './{feature}.controller'
+export type { CreateFeatureInput, FeatureFilters } from './{feature}.types'
+
+// domains/{domain}/features/index.ts
+export * from './{feature-a}'
+export * from './{feature-b}'
+
+// domains/{domain}/index.ts
+export * from './features'
+```
+
+---
+
+## Module Boundary Rules
+
+### Rule 1: Import via barrel exports ONLY
+
+```typescript
+// CORRECT - Import from domain's public API
+import { FeatureService } from '@/domains/{domain}'
+import { OtherService } from '@/domains/{other-domain}'
+
+// FORBIDDEN - Never reach into module internals
+import { FeatureService } from '@/domains/{domain}/features/{feature}/{feature}.service'
+```
+
+### Rule 2: No circular dependencies
+
+```typescript
+// If domain-a depends on domain-b, domain-b CANNOT depend on domain-a
+// Plan dependency direction carefully
+```
+
+### Rule 3: Domains own their database tables
+
+```typescript
+// Only the owning domain writes to its tables
+// Other domains READ via the domain's public API
+
+// In domains/{domain}/features/{feature}/{feature}.service.ts
+import { OtherService } from '@/domains/{other-domain}';  // Cross-module read
+
+// FORBIDDEN: Direct DB access to another domain's table
+prisma.otherTable.findUnique({ ... });  // NO! Use OtherService instead
+```
+
+### Rule 4: Direct function calls (no events)
+
+```typescript
+// Modular monolith = same process = just call functions
+import { OtherService } from '@/domains/{other-domain}'
+
+await OtherService.updateStatus(id, 'active', tenantId)
+
+// No EventEmitter, no message queue - keep it simple
+```
+
+---
+
+## Controller + Service Pattern
+
+This pattern mirrors the frontend's **Container + Presentational** pattern.
+
+### Controller (like Container)
+
+- Handles HTTP request/response
+- Authentication/authorization
+- Input validation with Zod
+- Calls services for business logic
+- **Never contains business logic**
+
+### Service (like Presentational)
+
+- Pure business logic
+- Receives parameters (never reads from `req`)
+- Returns data
+- Database operations
+- Cross-module calls
+
+### Example
+
+```typescript
+// domains/{domain}/features/{feature}/{feature}.controller.ts
+import { Router } from 'express'
+import { authenticate } from '@/middleware/auth.middleware'
+import { requirePermission } from '@/middleware/permission.middleware'
+import { createSchema } from './{feature}.schema'
+import { FeatureService } from './{feature}.service'
+
+const router = Router()
+router.use(authenticate)
+
+export const create = [
+  requirePermission('{domain}.create'),
+  async (req, res, next) => {
+    try {
+      const tenantId = req.user!.tenant_id
+      const data = createSchema.parse(req.body)
+
+      const result = await FeatureService.create({
+        ...data,
+        tenantId,
+      })
+
+      res.status(201).json({ success: true, data: result })
+    } catch (error) {
+      next(error)
+    }
+  },
+]
+
+export const list = [
+  requirePermission('{domain}.view'),
+  async (req, res, next) => {
+    try {
+      const tenantId = req.user!.tenant_id
+      const results = await FeatureService.list(tenantId, req.query)
+      res.json({ success: true, data: results })
+    } catch (error) {
+      next(error)
+    }
+  },
+]
+```
+
+```typescript
+// domains/{domain}/features/{feature}/{feature}.service.ts
+import { prisma } from '@/infrastructure/database'
+
+export interface CreateFeatureData {
+  tenantId: number
+  // ... other fields
+}
+
+export class FeatureService {
+  static async create(data: CreateFeatureData) {
+    return prisma.{table}.create({
+      data: {
+        tenant_id: data.tenantId, // ALWAYS include tenant_id
+        // ... other fields
+      },
+    })
+  }
+
+  static async list(tenantId: number, filters?: FeatureFilters) {
+    return prisma.{table}.findMany({
+      where: {
+        tenant_id: tenantId, // ALWAYS include tenant_id
+        ...filters,
+      },
+    })
+  }
+}
+```
+
+```typescript
+// domains/{domain}/features/{feature}/{feature}.schema.ts
+import { z } from 'zod'
+
+export const createSchema = z.object({
+  // Define your schema fields
+  name: z.string().min(1).max(100),
+  // ... other fields
+})
+
+export type CreateFeatureInput = z.infer<typeof createSchema>
+```
+
+---
+
+## Security Requirements
+
+### 1. Authentication on ALL routes
+
+```typescript
+router.use(authenticate) // REQUIRED on every domain router
+```
+
+### 2. Permission checks on endpoints
+
+```typescript
+router.get('/{resource}', requirePermission('{domain}.view'), ...);
+router.post('/{resource}', requirePermission('{domain}.create'), ...);
+router.put('/{resource}/:id', requirePermission('{domain}.update'), ...);
+router.delete('/{resource}/:id', requirePermission('{domain}.delete'), ...);
+```
+
+### 3. Tenant isolation in ALL queries
+
+```typescript
+// EVERY database query must include tenant_id
+prisma.{table}.findMany({
+  where: {
+    tenant_id: tenantId, // MANDATORY
+    status: 'active',
+  },
+})
+
+// NEVER do this - SECURITY VULNERABILITY
+prisma.{table}.findMany({ where: { status: 'active' } }) // Missing tenant_id!
+```
+
+### 4. Input validation with Zod
+
+```typescript
+import { z } from 'zod'
+
+const createSchema = z.object({
+  name: z.string().min(1).max(100),
+  email: z.string().email(),
+  // ... other fields
+})
+
+// In controller - ALWAYS validate before using
+const data = createSchema.parse(req.body)
+```
+
+---
+
+## Data Access Patterns
+
+### Standard Response Format
+
+```typescript
+// Success with single item
+return { success: true, data: result }
+
+// Success with list
+return { success: true, data: items, total: count }
+
+// Error (use AppError class)
+throw new AppError('Resource not found', 404)
+```
+
+### Pagination
+
+```typescript
+export async function list(tenantId: number, options: PaginationOptions) {
+  const { page = 1, limit = 20 } = options
+  const skip = (page - 1) * limit
+
+  const [data, total] = await Promise.all([
+    prisma.{table}.findMany({
+      where: { tenant_id: tenantId },
+      skip,
+      take: limit,
+      orderBy: { created_at: 'desc' },
+    }),
+    prisma.{table}.count({ where: { tenant_id: tenantId } }),
+  ])
+
+  return { data, total, page, limit }
+}
+```
+
+### Cross-Module Communication
+
+```typescript
+// domains/{domain-a}/features/{feature}/{feature}.service.ts
+import { DomainBService } from '@/domains/{domain-b}'
+
+export async function completeAction(
+  id: number,
+  outcome: string,
+  tenantId: number
+) {
+  const result = await prisma.{table}.update({
+    where: { id, tenant_id: tenantId },
+    data: { status: 'completed', outcome },
+  })
+
+  // Cross-module call via barrel export
+  if (outcome === 'success') {
+    await DomainBService.updateStatus(result.related_id, 'active', tenantId)
+  }
+
+  return result
+}
+```
+
+---
+
+## Naming Conventions
+
+### File Names: kebab-case
+
+```
+feature-name.controller.ts
+feature-name.service.ts
+data-processor.service.ts
+```
+
+### Exports: Named exports only (NO default exports)
+
+```typescript
+// CORRECT - Named exports
+export const featureController = { ... };
+export { FeatureService } from './feature.service';
+export class FeatureService { ... }
+
+// FORBIDDEN - Default exports
+export default featureController;  // NEVER
+export default class FeatureService { }    // NEVER
+```
+
+### Classes: PascalCase
+
+```typescript
+export class FeatureService { ... }
+export class DataProcessor { ... }
+```
+
+### Functions: camelCase
+
+```typescript
+export function getResourceById() { ... }
+export function createResource() { ... }
+```
+
+### Variables: camelCase
+
+```typescript
+const tenantId = req.user.tenant_id;
+const resourceData = { ... };
+```
+
+---
+
+## Import Rules
+
+### Allowed Imports
+
+```typescript
+// Domain imports from other domains via barrel
+import { ServiceA } from '@/domains/{domain-a}'
+import { ServiceB, ServiceC } from '@/domains/{domain-b}'
+
+// Domain imports from infrastructure
+import { prisma } from '@/infrastructure/database'
+import { EmailService } from '@/infrastructure/email'
+import { StorageService } from '@/infrastructure/storage'
+
+// Domain imports from middleware/utils
+import { authenticate } from '@/middleware'
+import { AppError } from '@/utils/error'
+
+// Internal feature imports (within same domain)
+import { FeatureService } from './{feature}.service'
+```
+
+### Forbidden Imports
+
+```typescript
+// NEVER import internal domain files from outside
+import { FeatureService } from '@/domains/{domain}/features/{feature}/{feature}.service' // WRONG!
+
+// NEVER import from old legacy paths
+import { Service } from '@/services/{service}.service' // WRONG - path doesn't exist!
+```
+
+### Dependency Direction
+
+```
+routes → domains → infrastructure
+            ↓
+    middleware/utils
+```
+
+---
+
+## Common Mistakes to Avoid
+
+### 1. Missing tenant_id in queries
+
+```typescript
+// WRONG - Security vulnerability!
+prisma.{table}.findMany({ where: { status: 'active' } })
+
+// CORRECT
+prisma.{table}.findMany({ where: { tenant_id: tenantId, status: 'active' } })
+```
+
+### 2. Business logic in controllers
+
+```typescript
+// WRONG
+router.post('/', async (req, res) => {
+  const resource = await prisma.{table}.create({ data: req.body });
+  if (resource.status === 'active') {
+    await prisma.other.create({ ... });  // Business logic in controller!
+  }
+});
+
+// CORRECT
+router.post('/', async (req, res) => {
+  const data = createSchema.parse(req.body);
+  const resource = await FeatureService.create(data, req.user.tenant_id);
+  res.status(201).json({ success: true, data: resource });
+});
+```
+
+### 3. Skipping input validation
+
+```typescript
+// WRONG - Trusting raw input
+const resource = await FeatureService.create(req.body, tenantId)
+
+// CORRECT - Validate first
+const data = createSchema.parse(req.body)
+const resource = await FeatureService.create(data, tenantId)
+```
+
+### 4. Using default exports
+
+```typescript
+// WRONG
+export default class FeatureService { }
+export default featureController;
+
+// CORRECT
+export class FeatureService { }
+export const featureController = { ... };
+```
+
+### 5. Missing authentication
+
+```typescript
+// WRONG
+router.get('/{resource}', async (req, res) => { ... });
+
+// CORRECT
+router.use(authenticate);
+router.get('/{resource}', requirePermission('{domain}.view'), async (req, res) => { ... });
+```
+
+### 6. Importing from internal paths
+
+```typescript
+// WRONG
+import { FeatureService } from '@/domains/{domain}/features/{feature}/{feature}.service'
+
+// CORRECT
+import { FeatureService } from '@/domains/{domain}'
+```
+
+---
+
+## Checklist for New Features
+
+Before adding any new feature:
+
+- [ ] Identify the correct domain (matches frontend domain)
+- [ ] Create feature folder with controller, service, schema, index.ts
+- [ ] Use kebab-case for file names
+- [ ] Use named exports only (no default exports)
+- [ ] Add barrel exports to all index.ts files
+- [ ] Include `authenticate` middleware on router
+- [ ] Add `requirePermission()` on each endpoint
+- [ ] Include `tenant_id` in ALL database queries
+- [ ] Validate input with Zod schemas
+- [ ] Use standard response format `{ success: true, data: ... }`
+- [ ] Cross-module calls use barrel imports only
+- [ ] No direct database access to other domains' tables
+
+---
+
+## AI Coding Agent Instructions
+
+If you are an AI coding assistant working on this codebase:
+
+1. **Read this file first** before making any changes
+2. **Never skip tenant_id** in database queries - this is a security requirement
+3. **Always add authentication** to new routes
+4. **Use barrel exports** - never import internal module files
+5. **Keep controllers thin** - business logic goes in services
+6. **Validate all input** with Zod schemas
+7. **Use kebab-case** for file names
+8. **Use named exports only** - no default exports
+9. **Match frontend domains** - if unsure which domain, check the frontend
+
+---
+
+## Project-Specific Domains
+
+This project has the following domains:
+
+{{#each domains}}
+### {{name}}
+
+- **Description**: {{description}}
+- **Root Entity**: {{root_entity}}
+- **Entities**: {{entities}}
+- **Dependencies**: {{dependencies}}
+
+{{/each}}
+
+---
+
+## Related Documentation
+
+- `CLAUDE.md` - Quick reference for AI agents
+- `.claude/rules/frontend-architecture.md` - Frontend architecture (mirrors this structure)
+- `.claude/rules/design-system.md` - UI design system
+
+---
+
+*This architecture guide was generated by the KreativReason E2E Pipeline.*
+*Architecture Style: {{ARCHITECTURE_STYLE}}*
+*Generated: {{GENERATED_AT}}*

@@ -1,0 +1,482 @@
+# {{PROJECT_NAME}} Design System
+
+**{{PROJECT_NAME}} - Glassmorphism UI with {{DESIGN_PRESET}} Theme**
+
+This document defines the design patterns and conventions for the frontend. **All UI components must follow these guidelines.**
+
+---
+
+## Design Preset: {{DESIGN_PRESET}}
+
+{{#if PRESET_CREATIVE}}
+> **Creative Theme**: Blue primary with Red and Violet accents. Ideal for creative, innovative, or dynamic applications.
+{{/if}}
+{{#if PRESET_CORPORATE}}
+> **Corporate Theme**: Teal Green primary. Clean, professional appearance for business and enterprise applications.
+{{/if}}
+{{#if PRESET_NEUTRAL}}
+> **Neutral Theme**: Gray primary with Red and Blue accents. Minimal, versatile design suitable for any application type.
+{{/if}}
+{{#if PRESET_CUSTOM}}
+> **Custom Theme**: Client-specified colors tailored to brand requirements.
+{{/if}}
+
+---
+
+## Brand Colors
+
+### Primary Brand Color
+
+```
+{{PRIMARY_COLOR}} - Primary (use for titles, accents, icons, badges)
+```
+
+### Full Color Palette
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| Primary | `{{PRIMARY_COLOR}}` | Titles, headers, main CTAs |
+| Secondary | `{{SECONDARY_COLOR}}` | Supporting elements |
+| Accent 1 | `{{ACCENT_COLOR_1}}` | Highlights, badges |
+| Accent 2 | `{{ACCENT_COLOR_2}}` | Secondary highlights |
+| Background | `{{BACKGROUND_COLOR}}` | Page background |
+| Surface | `{{SURFACE_COLOR}}` | Card backgrounds |
+| Text Primary | `{{TEXT_PRIMARY}}` | Main body text |
+| Text Secondary | `{{TEXT_SECONDARY}}` | Muted text |
+| Success | `{{SUCCESS_COLOR}}` | Success states |
+| Warning | `{{WARNING_COLOR}}` | Warning states |
+| Error | `{{ERROR_COLOR}}` | Error states |
+
+### Color Usage
+
+```css
+/* Text colors */
+text-[{{PRIMARY_COLOR}}]              /* Primary titles, headers */
+text-[{{PRIMARY_COLOR}}]/60           /* Secondary icons, subtle accents */
+text-gray-800                         /* Primary body text */
+text-gray-600                         /* Secondary text */
+text-gray-500                         /* Muted text */
+
+/* Background tints */
+bg-[{{PRIMARY_COLOR}}]/5              /* Very subtle primary background */
+bg-[{{PRIMARY_COLOR}}]/10             /* Light primary background for badges */
+bg-[{{SURFACE_COLOR}}]/50             /* Table header background */
+bg-[{{SURFACE_COLOR}}]/30             /* Hover states */
+
+/* Border colors */
+border-[{{PRIMARY_COLOR}}]/20         /* Primary accent borders */
+border-[{{PRIMARY_COLOR}}]/30         /* Stronger primary borders */
+border-gray-200/30                    /* Subtle borders */
+border-gray-100/30                    /* Very subtle dividers */
+border-gray-100/20                    /* Table row borders */
+```
+
+---
+
+## Core Components
+
+### 1. FloatingOrbs Background
+
+{{#if GLASSMORPHISM_ENABLED}}
+Always include the `FloatingOrbs` component for pages using glassmorphism:
+
+```jsx
+import FloatingOrbs from '@/components/ui/floating-orbs'
+
+// Usage - wrap content in relative container
+<div className="relative">
+  <FloatingOrbs />
+  <GlassCard className="relative z-10">
+    {/* Content */}
+  </GlassCard>
+</div>
+```
+{{else}}
+FloatingOrbs is disabled for this project. Use standard backgrounds.
+{{/if}}
+
+### 2. GlassCard Container
+
+Primary container for content sections:
+
+```jsx
+import { GlassCard } from '@/components/ui/glass-card'
+
+<GlassCard className="relative z-10 bg-white/{{GLASS_OPACITY}} backdrop-blur-{{BLUR_INTENSITY}} border-[{{PRIMARY_COLOR}}]/{{BORDER_OPACITY}} shadow-xl shadow-[{{PRIMARY_COLOR}}]/{{SHADOW_OPACITY}}">
+  {/* Content */}
+</GlassCard>
+```
+
+**Required classes for glass containers:**
+
+- `bg-white/{{GLASS_OPACITY}}` - Semi-transparent white (opacity: {{GLASS_OPACITY}}%)
+- `backdrop-blur-{{BLUR_INTENSITY}}` - Frosted glass blur effect
+- `border-[{{PRIMARY_COLOR}}]/{{BORDER_OPACITY}}` - Primary-tinted border
+- `shadow-xl shadow-[{{PRIMARY_COLOR}}]/{{SHADOW_OPACITY}}` - Primary glow shadow for 3D depth
+- `relative z-10` - Ensure content appears above FloatingOrbs
+
+### 3. GlassBadge
+
+Use `GlassBadge` instead of standard `Badge`:
+
+```jsx
+import { GlassBadge } from '@/components/ui/glass-card'
+
+// Variants
+<GlassBadge variant="default">Default</GlassBadge>
+<GlassBadge variant="success">Success</GlassBadge>
+<GlassBadge variant="danger">Danger</GlassBadge>
+<GlassBadge variant="warning">Warning</GlassBadge>
+<GlassBadge variant="info">Info</GlassBadge>
+<GlassBadge variant="primary">Primary Accent</GlassBadge>
+
+// Custom primary brand styling
+<GlassBadge variant="primary" className="bg-[{{PRIMARY_COLOR}}]/10 text-[{{PRIMARY_COLOR}}] border-[{{PRIMARY_COLOR}}]/30">
+  Custom Primary
+</GlassBadge>
+```
+
+---
+
+## UI Patterns
+
+### Table Styling
+
+```jsx
+<Table>
+  <TableHeader>
+    <TableRow className="bg-[{{SURFACE_COLOR}}]/50 hover:bg-[{{SURFACE_COLOR}}]/70 border-b border-gray-100/30">
+      <TableHead className="text-[{{PRIMARY_COLOR}}] font-semibold">Column</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow className="hover:bg-[{{SURFACE_COLOR}}]/30 transition-colors border-b border-gray-100/20">
+      <TableCell className="text-gray-600">Content</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+```
+
+### Dialog/Modal Styling
+
+```jsx
+<DialogContent className="bg-white/90 backdrop-blur-{{BLUR_INTENSITY}} border-[{{PRIMARY_COLOR}}]/{{BORDER_OPACITY}} shadow-2xl shadow-[{{PRIMARY_COLOR}}]/{{SHADOW_OPACITY}}">
+  <DialogHeader>
+    <DialogTitle className="text-[{{PRIMARY_COLOR}}]">Title</DialogTitle>
+    <DialogDescription className="text-gray-600">Description</DialogDescription>
+  </DialogHeader>
+</DialogContent>
+```
+
+### Button Styling
+
+**Primary Action Button (Green gradient for approve/confirm):**
+
+```jsx
+<Button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg shadow-green-500/25 hover:shadow-green-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+  Approve
+</Button>
+```
+
+**Ghost/Secondary Button (Primary accent):**
+
+```jsx
+<Button
+  variant="ghost"
+  className="text-[{{PRIMARY_COLOR}}] hover:bg-[{{PRIMARY_COLOR}}]/10 hover:text-[{{PRIMARY_COLOR}}] transition-all"
+>
+  View
+</Button>
+```
+
+**Outline Button (Neutral):**
+
+```jsx
+<Button variant="outline" className="border-gray-300 hover:bg-gray-50 transition-all">
+  Cancel
+</Button>
+```
+
+**Primary Gradient Button (for brand actions):**
+
+```jsx
+<Button className="bg-gradient-to-r from-[{{PRIMARY_COLOR}}] to-[{{SECONDARY_COLOR}}] hover:from-[{{SECONDARY_COLOR}}] hover:to-[{{PRIMARY_COLOR}}] text-white shadow-lg shadow-[{{PRIMARY_COLOR}}]/25 hover:shadow-[{{PRIMARY_COLOR}}]/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+  Action
+</Button>
+```
+
+### Card Sections (in dialogs/details)
+
+```jsx
+<div className="p-4 rounded-xl bg-[{{PRIMARY_COLOR}}]/5 border border-[{{PRIMARY_COLOR}}]/20 backdrop-blur-sm">
+  <h4 className="font-semibold text-[{{PRIMARY_COLOR}}]">Section Title</h4>
+  <p className="text-gray-700">Content</p>
+</div>
+```
+
+### Detail Cards
+
+```jsx
+<div
+  className={`p-4 rounded-xl border-2 backdrop-blur-sm transition-all ${
+    isHighlighted
+      ? 'border-green-400/50 bg-green-50/50 shadow-lg shadow-green-500/10'
+      : 'border-gray-200/50 bg-gray-50/50 shadow-lg shadow-gray-500/5'
+  }`}
+>
+  {/* Card content */}
+</div>
+```
+
+### Icons with Primary Accent
+
+```jsx
+<User className="h-4 w-4 text-[{{PRIMARY_COLOR}}]" />        {/* Primary icon */}
+<Mail className="h-3 w-3 text-[{{PRIMARY_COLOR}}]/60" />     {/* Secondary icon */}
+```
+
+---
+
+## Loading States
+
+```jsx
+<div className="relative min-h-[400px]">
+  {{#if GLASSMORPHISM_ENABLED}}<FloatingOrbs />{{/if}}
+  <GlassCard className="relative z-10 bg-white/{{GLASS_OPACITY}} backdrop-blur-{{BLUR_INTENSITY}} border-[{{PRIMARY_COLOR}}]/{{BORDER_OPACITY}} shadow-lg shadow-[{{PRIMARY_COLOR}}]/5">
+    <CardContent className="flex justify-center items-center py-12">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[{{PRIMARY_COLOR}}]"></div>
+    </CardContent>
+  </GlassCard>
+</div>
+```
+
+---
+
+## Empty States
+
+```jsx
+<div className="relative min-h-[400px]">
+  {{#if GLASSMORPHISM_ENABLED}}<FloatingOrbs />{{/if}}
+  <GlassCard className="relative z-10 bg-white/{{GLASS_OPACITY}} backdrop-blur-{{BLUR_INTENSITY}} border-[{{PRIMARY_COLOR}}]/{{BORDER_OPACITY}} shadow-lg shadow-[{{PRIMARY_COLOR}}]/5">
+    <CardHeader>
+      <CardTitle className="text-[{{PRIMARY_COLOR}}]">Title</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="text-center py-8 text-gray-500">
+        <Icon className="h-12 w-12 mx-auto mb-4 text-[{{PRIMARY_COLOR}}]" />
+        <p className="text-lg font-medium">Empty State Message</p>
+        <p className="text-sm text-gray-400 mt-2">Description</p>
+      </div>
+    </CardContent>
+  </GlassCard>
+</div>
+```
+
+---
+
+## Required Imports
+
+```jsx
+// Glass components
+import { GlassCard, GlassBadge } from '@/components/ui/glass-card'
+{{#if GLASSMORPHISM_ENABLED}}
+import FloatingOrbs from '@/components/ui/floating-orbs'
+{{/if}}
+
+// Standard components (still needed for structure)
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
+```
+
+---
+
+## Typography
+
+### Font Families
+
+- **Headings**: {{FONT_HEADING}}
+- **Body**: {{FONT_BODY}}
+- **Code**: {{FONT_MONO}}
+
+### Type Scale
+
+Base size: {{FONT_BASE_SIZE}}
+Scale ratio: {{FONT_SCALE_RATIO}}
+
+```css
+text-xs    /* 0.75rem */
+text-sm    /* 0.875rem */
+text-base  /* 1rem ({{FONT_BASE_SIZE}}) */
+text-lg    /* 1.125rem */
+text-xl    /* 1.25rem */
+text-2xl   /* 1.5rem */
+text-3xl   /* 1.875rem */
+text-4xl   /* 2.25rem */
+```
+
+---
+
+## Responsive Breakpoints
+
+| Breakpoint | Min Width | Usage |
+|------------|-----------|-------|
+| `sm` | {{BREAKPOINT_SM}} | Mobile landscape |
+| `md` | {{BREAKPOINT_MD}} | Tablets |
+| `lg` | {{BREAKPOINT_LG}} | Desktop |
+| `xl` | {{BREAKPOINT_XL}} | Large desktop |
+| `2xl` | {{BREAKPOINT_2XL}} | Extra large screens |
+
+---
+
+## Component Style: {{COMPONENT_STYLE}}
+
+{{#if STYLE_ROUNDED}}
+Border radius: `rounded-lg` (8px) for cards, `rounded-md` (6px) for buttons
+{{/if}}
+{{#if STYLE_SHARP}}
+Border radius: `rounded-none` (0px) - sharp edges for a modern, minimal look
+{{/if}}
+{{#if STYLE_PILL}}
+Border radius: `rounded-full` for buttons, `rounded-2xl` for cards - pill/capsule shapes
+{{/if}}
+
+---
+
+## Dark Mode Support
+
+{{#if DARK_MODE_ENABLED}}
+Dark mode is **enabled** for this project. Use the following patterns:
+
+```jsx
+// Background that adapts to dark mode
+<div className="bg-white dark:bg-gray-900">
+
+// Text that adapts
+<p className="text-gray-800 dark:text-gray-200">
+
+// Primary color (same in both modes for brand consistency)
+<h1 className="text-[{{PRIMARY_COLOR}}]">
+```
+{{else}}
+Dark mode is **disabled** for this project. Use light mode styles only.
+{{/if}}
+
+---
+
+## Checklist for New UI Components
+
+- [ ] {{#if GLASSMORPHISM_ENABLED}}Import `FloatingOrbs` and wrap content appropriately{{/if}}
+- [ ] Use `GlassCard` instead of plain `Card` for main containers
+- [ ] Apply `bg-white/{{GLASS_OPACITY}} backdrop-blur-{{BLUR_INTENSITY}}` for glass effect
+- [ ] Use `border-[{{PRIMARY_COLOR}}]/{{BORDER_OPACITY}}` for primary-tinted borders
+- [ ] Add `shadow-xl shadow-[{{PRIMARY_COLOR}}]/{{SHADOW_OPACITY}}` for primary glow depth
+- [ ] Use `text-[{{PRIMARY_COLOR}}]` for titles and accents
+- [ ] Replace `Badge` with `GlassBadge` variants
+- [ ] Style buttons with gradient backgrounds and hover effects
+- [ ] Add `transition-all` for smooth animations
+- [ ] Include `hover:scale-[1.02] active:scale-[0.98]` for 3D button effects
+- [ ] Use primary-tinted table headers and row hover states
+- [ ] Apply glassmorphism to dialogs/modals
+
+---
+
+## Anti-Patterns (Do NOT Do)
+
+```jsx
+// WRONG - Plain card without glass effect
+<Card>
+  <CardContent>...</CardContent>
+</Card>
+
+// CORRECT - Glass card with proper styling
+<GlassCard className="bg-white/{{GLASS_OPACITY}} backdrop-blur-{{BLUR_INTENSITY}} border-[{{PRIMARY_COLOR}}]/{{BORDER_OPACITY}} shadow-xl shadow-[{{PRIMARY_COLOR}}]/{{SHADOW_OPACITY}}">
+  <CardContent>...</CardContent>
+</GlassCard>
+
+// WRONG - Standard Badge
+<Badge variant="destructive">Error</Badge>
+
+// CORRECT - GlassBadge
+<GlassBadge variant="danger">Error</GlassBadge>
+
+// WRONG - Hardcoded colors without brand
+<div className="text-blue-600">Title</div>
+
+// CORRECT - Brand primary color
+<div className="text-[{{PRIMARY_COLOR}}]">Title</div>
+
+// WRONG - Flat button without depth
+<Button className="bg-green-600">Submit</Button>
+
+// CORRECT - 3D gradient button with shadow
+<Button className="bg-gradient-to-r from-green-500 to-green-600 shadow-lg shadow-green-500/25 hover:scale-[1.02]">
+  Submit
+</Button>
+```
+
+---
+
+## File Locations
+
+| Component | Path |
+|-----------|------|
+| FloatingOrbs | `@/components/ui/floating-orbs.tsx` |
+| GlassCard, GlassBadge | `@/components/ui/glass-card.tsx` |
+| Global CSS (glass classes) | `@/app/globals.css` |
+| Tailwind config (colors) | `tailwind.config.js` |
+
+---
+
+## Tailwind Config Reference
+
+```javascript
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '{{PRIMARY_COLOR}}',
+        secondary: '{{SECONDARY_COLOR}}',
+        accent: {
+          1: '{{ACCENT_COLOR_1}}',
+          2: '{{ACCENT_COLOR_2}}',
+        },
+      },
+      fontFamily: {
+        heading: ['{{FONT_HEADING}}', 'sans-serif'],
+        body: ['{{FONT_BODY}}', 'sans-serif'],
+        mono: ['{{FONT_MONO}}', 'monospace'],
+      },
+    },
+  },
+}
+```
+
+---
+
+## Summary
+
+1. {{#if GLASSMORPHISM_ENABLED}}**Always use FloatingOrbs** background for glassmorphism pages{{else}}**Use clean backgrounds** - FloatingOrbs disabled{{/if}}
+2. **Use GlassCard** instead of Card for containers
+3. **Apply brand primary color** ({{PRIMARY_COLOR}}) for accents
+4. **Use GlassBadge** variants instead of Badge
+5. **Style buttons with gradients** and 3D hover effects
+6. **Add backdrop-blur** for frosted glass effect
+7. **Include primary shadows** for depth and glow
+8. **Use transitions** for smooth interactions
+9. **Follow {{COMPONENT_STYLE}} style** for border radius
+10. {{#if DARK_MODE_ENABLED}}**Support dark mode** with appropriate classes{{else}}**Light mode only** - no dark mode styles needed{{/if}}
+
+---
+
+*This design system was generated by the KreativReason E2E Pipeline.*
+*Design Preset: {{DESIGN_PRESET}}*
+*Generated: {{GENERATED_AT}}*
