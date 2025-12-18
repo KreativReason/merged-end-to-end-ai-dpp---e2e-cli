@@ -13,6 +13,7 @@ Implement individual tasks from the task plan with proper code, tests, and docum
   - `docs/erd.json` (for database schema and relationships)
   - `docs/flow.json` (for system interactions)
   - `docs/adr.json` (for architectural constraints)
+  - `docs/work-log.json` (for progress tracking and crash recovery)
   - `app/models.py` (for validation schema)
 
 ## Task
@@ -20,12 +21,15 @@ Implement a single task with complete code, comprehensive tests, and updated doc
 
 ### Process Steps
 1. **Load Context**: Read task details and all referenced artifacts
-2. **Validate Dependencies**: Ensure prerequisite tasks are complete
-3. **Implement Code**: Write production-ready code following best practices
-4. **Write Tests**: Create unit, integration, and acceptance tests
-5. **Update Documentation**: Update relevant docs and comments
-6. **Validate Output**: Run tests and linting
-7. **Emit Result**: Output implementation report in JSON
+2. **Check Work Log**: Read `docs/work-log.json` to check if task was previously attempted
+3. **Update Work Log - Started**: Mark task as `in_progress` in work-log.json
+4. **Validate Dependencies**: Ensure prerequisite tasks are complete (check work-log.json for status)
+5. **Implement Code**: Write production-ready code following best practices
+6. **Write Tests**: Create unit, integration, and acceptance tests
+7. **Update Documentation**: Update relevant docs and comments
+8. **Validate Output**: Run tests and linting
+9. **Update Work Log - Completed**: Mark task as `completed` with files_modified and commits
+10. **Emit Result**: Output implementation report in JSON
 
 ### Implementation Requirements
 - Code must follow project style guidelines and ADR decisions

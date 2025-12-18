@@ -125,6 +125,50 @@ The scaffolder MUST inject the following into generated projects:
 | Design | `src/components/ui/glass-card.tsx` | Glassmorphism components |
 | Design | `src/components/ui/floating-orbs.tsx` | Background component |
 | Design | `tailwind.config.js` | Brand colors |
+| **Progress** | `docs/work-log.json` | **Work session tracking (crash recovery)** |
+| **Progress** | `CHANGELOG.md` | **Human-readable change history** |
+
+### Initial Progress Tracking Files
+
+The scaffolder MUST create these files with initial content:
+
+**`docs/work-log.json`** - Empty work log ready for sessions:
+```json
+{
+  "artifact_type": "work_log",
+  "status": "active",
+  "validation": "passed",
+  "data": {
+    "project_name": "{{project_name}}",
+    "created_at": "{{ISO-8601}}",
+    "updated_at": "{{ISO-8601}}",
+    "sessions": [],
+    "task_status": {},
+    "total_sessions": 0,
+    "total_tasks_completed": 0,
+    "total_commits": 0
+  }
+}
+```
+
+**`CHANGELOG.md`** - Initial changelog:
+```markdown
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- Initial project scaffolding
+- Project structure created from KreativReason genesis pipeline
+
+---
+*This changelog is automatically updated by the KreativReason work command.*
+```
 
 ### Validation Requirements
 

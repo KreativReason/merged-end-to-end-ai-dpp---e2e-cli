@@ -137,6 +137,8 @@ python -m app.lint_erd projects/solarai-core/docs/erd-solarai.json
 - `TasksModel` - Implementation Tasks
 - `ADRModel` - Architecture Decisions
 - `ScaffoldModel` - Project Structure Plan
+- `WorkLogModel` - Work session tracking (crash recovery)
+- `ChangelogModel` - Human-readable change history
 
 ## Human Approval Gates
 
@@ -228,6 +230,42 @@ Visual iteration and QA:
 | `gemini-imagegen` | Mockup generation |
 | `compound-docs` | Pattern documentation |
 | `skill-creator` | Create new skills |
+| `work-session` | **Crash recovery & progress tracking** |
+
+## Work Session Tracking (Crash Recovery)
+
+Child projects include persistent progress tracking to survive API crashes and context overflow:
+
+### Files Created in Child Projects
+
+| File | Purpose |
+|------|---------|
+| `docs/work-log.json` | Machine-readable session/task tracking |
+| `CHANGELOG.md` | Human-readable change history |
+
+### How It Works
+
+1. **Session Start**: `/kreativreason:work` creates a new session in `work-log.json`
+2. **Task Checkpoints**: Each task start/complete/fail updates the log
+3. **Crash Detection**: Next run detects incomplete sessions
+4. **Resume**: Skip completed tasks, resume from last checkpoint
+
+### Recovery After Crash
+
+```bash
+# Check progress after a crash
+cat docs/work-log.json | jq '.data.task_status'
+
+# See completed tasks
+cat docs/work-log.json | jq '[.data.task_status | to_entries[] | select(.value.status == "completed") | .key]'
+```
+
+### Pydantic Models
+
+- `WorkLogModel` - Work log artifact wrapper
+- `WorkSession` - Single work session
+- `TaskProgress` - Individual task status
+- `ChangelogModel` - Changelog data
 
 ## MCP Servers
 

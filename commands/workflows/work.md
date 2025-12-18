@@ -1,6 +1,6 @@
 # Work Command
 
-> Execute implementation plans with continuous testing and quality checks
+> Execute implementation plans with continuous testing, quality checks, and **persistent progress tracking**
 
 ## Usage
 
@@ -12,14 +12,33 @@
 
 The Work command executes implementation plans systematically, using git worktrees for isolation, continuous testing after each change, and automatic PR creation upon completion.
 
+**Crash Recovery**: All progress is persisted to `docs/work-log.json`. If a session crashes, you can resume from the last checkpoint.
+
 ## Parameters
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | `plan_path` | Yes | Path to plan file (e.g., plans/feat-user-auth.md) |
 | `worktree` | No | Use git worktree for isolation (default: true) |
+| `resume` | No | Resume from crashed/paused session (default: auto-detect) |
 
 ## Workflow
+
+### Phase 0: Session Initialization (Crash Recovery)
+
+```
+1. Check for existing work-log.json in docs/
+2. If found, check for crashed/active sessions:
+   - If crashed session exists → offer to resume
+   - If active session exists → warn and ask to continue or start fresh
+3. Create new WorkSession entry:
+   - session_id: WS-{timestamp}
+   - started_at: now
+   - status: "active"
+   - plan_file: <plan_path>
+4. Write updated work-log.json immediately
+5. Load task_status to know which tasks are already completed
+```
 
 ### Phase 1: Quick Start
 
@@ -30,6 +49,7 @@ The Work command executes implementation plans systematically, using git worktre
    - Create feature branch
    - Verify dependencies
 3. Create actionable task list using TodoWrite
+   - Skip tasks already marked "completed" in work-log.json
 4. Identify dependencies and priorities
 ```
 
@@ -87,11 +107,19 @@ Benefits:
 - Can switch between features
 - Easy rollback if implementation fails
 
-## Task Execution Loop
+## Task Execution Loop (with Persistence)
 
 ```
 while tasks_remaining:
     task = get_next_task()
+
+    # === CHECKPOINT: Task Started ===
+    update_work_log({
+        task_id: task.id,
+        status: "in_progress",
+        started_at: now,
+        attempt_count: +1
+    })
     TodoWrite(task.id, status="in_progress")
 
     # Implementation
@@ -101,12 +129,38 @@ while tasks_remaining:
     # Continuous testing
     run_tests(task.testing_strategy.test_command)
     if tests_fail:
+        # === CHECKPOINT: Task Failed ===
+        update_work_log({
+            task_id: task.id,
+            status: "failed",
+            last_error: error_message
+        })
         fix_and_retry()
 
     # Progress
-    commit(task)
+    commit_sha = commit(task)
+
+    # === CHECKPOINT: Task Completed ===
+    update_work_log({
+        task_id: task.id,
+        status: "completed",
+        completed_at: now,
+        commits: [commit_sha],
+        files_modified: changed_files
+    })
+    update_changelog(task, commit_sha)
     TodoWrite(task.id, status="completed")
 ```
+
+### Checkpoint Frequency
+
+Progress is saved to `docs/work-log.json` at these points:
+- Session start
+- Each task start (in_progress)
+- Each task completion
+- Each task failure
+- Each commit
+- Session end (completed/paused/crashed)
 
 ## Output Schema
 
@@ -238,9 +292,46 @@ Implements: plans/feat-user-auth.md
 >   Tests added: 3
 ```
 
+## Crash Recovery
+
+If a session crashes (API error, context overflow, etc.), the next `/kreativreason:work` will:
+
+1. Detect the crashed session in `docs/work-log.json`
+2. Show what was completed vs. in-progress
+3. Offer to resume from the last checkpoint
+
+```
+> 🔄 Detected crashed session WS-1703123456
+>
+> Completed tasks: TASK-001, TASK-002, TASK-003
+> In progress: TASK-004 (started 15 min ago)
+> Remaining: TASK-005, TASK-006
+>
+> Resume from TASK-004? [Y/n]
+```
+
+### Manual Recovery
+
+If auto-detection fails, check `docs/work-log.json`:
+```bash
+cat docs/work-log.json | jq '.data.task_status'
+```
+
+## Session Finalization
+
+At the end of a successful session:
+```
+1. Mark session status = "completed"
+2. Update session.ended_at
+3. Calculate summary stats
+4. Append to CHANGELOG.md
+5. Write final work-log.json
+```
+
 ## Core Principles
 
 1. **Start fast, execute faster**: Get clarification upfront, don't pause mid-work
 2. **Match existing patterns**: Study codebase, don't reinvent
 3. **Test continuously**: Run tests after each change
 4. **Ship complete**: Don't leave features half-done
+5. **Persist progress**: Save checkpoints so crashes don't lose work

@@ -967,6 +967,130 @@ class ImplementationModel(BaseModel):
 
 
 # ============================================================================
+# Work Session & Progress Tracking Models
+# ============================================================================
+
+class TaskProgressStatus(str, Enum):
+    """Status of a task in the work session."""
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    BLOCKED = "blocked"
+    FAILED = "failed"
+
+
+class TaskProgress(BaseModel):
+    """Tracks the progress of a single task."""
+    task_id: str = Field(..., pattern=r"^TASK-\d{3}$")
+    status: TaskProgressStatus = Field(default=TaskProgressStatus.PENDING)
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    attempt_count: int = Field(default=0, ge=0)
+    last_error: Optional[str] = None
+    files_modified: List[str] = Field(default_factory=list)
+    commits: List[str] = Field(default_factory=list, description="Commit SHAs for this task")
+    notes: Optional[str] = None
+
+
+class WorkSessionStatus(str, Enum):
+    """Status of a work session."""
+    ACTIVE = "active"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    CRASHED = "crashed"
+    ABORTED = "aborted"
+
+
+class WorkSession(BaseModel):
+    """
+    Represents a single work session.
+    Persisted to docs/work-log.json for crash recovery.
+    """
+    session_id: str = Field(..., description="Unique session ID: WS-{timestamp}")
+    started_at: datetime
+    ended_at: Optional[datetime] = None
+    status: WorkSessionStatus = Field(default=WorkSessionStatus.ACTIVE)
+    plan_file: Optional[str] = Field(None, description="Path to plan file being executed")
+    branch_name: Optional[str] = None
+    worktree_path: Optional[str] = None
+
+    # Progress tracking
+    tasks_attempted: List[TaskProgress] = Field(default_factory=list)
+    current_task_id: Optional[str] = Field(None, pattern=r"^TASK-\d{3}$")
+
+    # Summary stats (updated on completion/crash)
+    tasks_completed: int = Field(default=0, ge=0)
+    tasks_failed: int = Field(default=0, ge=0)
+    total_commits: int = Field(default=0, ge=0)
+    total_files_changed: int = Field(default=0, ge=0)
+
+    # Error recovery
+    last_checkpoint: Optional[datetime] = None
+    crash_reason: Optional[str] = None
+    recovery_notes: Optional[str] = None
+
+
+class WorkLogData(BaseModel):
+    """
+    Complete work log for a project.
+    Stored at: {child-project}/docs/work-log.json
+    """
+    project_name: str = Field(..., min_length=3, max_length=100)
+    created_at: datetime
+    updated_at: datetime
+
+    # All work sessions (newest first)
+    sessions: List[WorkSession] = Field(default_factory=list)
+
+    # Aggregated task status (source of truth for task completion)
+    task_status: Dict[str, TaskProgress] = Field(
+        default_factory=dict,
+        description="Map of task_id -> TaskProgress for all tasks ever worked on"
+    )
+
+    # Quick stats
+    total_sessions: int = Field(default=0, ge=0)
+    total_tasks_completed: int = Field(default=0, ge=0)
+    total_commits: int = Field(default=0, ge=0)
+
+
+class WorkLogModel(BaseModel):
+    """Artifact wrapper for work log."""
+    artifact_type: str = Field(default="work_log")
+    status: str = Field(default="active")
+    validation: ValidationStatus
+    data: WorkLogData
+
+
+class ChangelogEntry(BaseModel):
+    """Single entry in the changelog."""
+    version: str = Field(..., description="Semantic version or session reference")
+    date: datetime
+    session_id: str = Field(..., description="Reference to work session")
+    summary: str = Field(..., min_length=10)
+    changes: List[str] = Field(..., min_items=1, description="List of changes made")
+    tasks_completed: List[str] = Field(default_factory=list, description="TASK-### IDs completed")
+    breaking_changes: List[str] = Field(default_factory=list)
+    contributors: List[str] = Field(default_factory=list)
+
+
+class ChangelogData(BaseModel):
+    """
+    Human-readable changelog for a project.
+    Stored at: {child-project}/CHANGELOG.md (generated from this)
+    """
+    project_name: str = Field(..., min_length=3, max_length=100)
+    entries: List[ChangelogEntry] = Field(default_factory=list)
+
+
+class ChangelogModel(BaseModel):
+    """Artifact wrapper for changelog."""
+    artifact_type: str = Field(default="changelog")
+    status: str = Field(default="active")
+    data: ChangelogData
+
+
+# ============================================================================
 # Error Models
 # ============================================================================
 
@@ -1009,10 +1133,15 @@ __all__ = [
     # Implementation
     'ImplementationModel', 'ImplementationData', 'FileChange', 'TestResult',
 
+    # Work Session & Progress Tracking
+    'WorkLogModel', 'WorkLogData', 'WorkSession', 'TaskProgress',
+    'ChangelogModel', 'ChangelogData', 'ChangelogEntry',
+    'TaskProgressStatus', 'WorkSessionStatus',
+
     # Error
     'ErrorModel',
 
     # Enums
     'PriorityLevel', 'TaskType', 'ADRStatus', 'ValidationStatus', 'EmotionalState', 'TouchpointType',
-    'DesignPreset', 'ArchitectureStyle'
+    'DesignPreset', 'ArchitectureStyle', 'TaskProgressStatus', 'WorkSessionStatus'
 ]
