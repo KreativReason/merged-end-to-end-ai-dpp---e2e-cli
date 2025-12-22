@@ -40,6 +40,26 @@ The Work command executes implementation plans systematically, using git worktre
 5. Load task_status to know which tasks are already completed
 ```
 
+### Phase 0.5: Load Architecture Rules (MANDATORY - DO NOT SKIP)
+
+```
+CRITICAL: Before any implementation, load project architecture rules:
+
+1. Read CLAUDE.md in project root - understand project philosophy
+2. Read KREATIVREASON-GUIDE.md - comprehensive patterns reference
+3. Read .claude/rules/backend-architecture.md - multi-tenancy, patterns
+4. Read .claude/rules/frontend-architecture.md - component patterns
+5. Read .claude/rules/design-system.md - UI patterns
+6. Read prisma/schema.prisma - database schema, enums, types
+7. Read package.json - installed library versions
+
+This ensures EVERY task follows established patterns, preventing:
+- Missing multi-tenancy (org_id/tenantId)
+- Invalid enum values
+- Wrong library API usage
+- Inconsistent code patterns
+```
+
 ### Phase 1: Quick Start
 
 ```
@@ -58,11 +78,33 @@ The Work command executes implementation plans systematically, using git worktre
 ```
 For each task:
   1. Mark task as in_progress
-  2. Read relevant context files
-  3. Implement following existing patterns
+  2. Read relevant context files (including similar existing code)
+  3. Implement following CLAUDE.md patterns:
+     - Multi-tenancy: Include tenantId in ALL queries
+     - Rich domain models: Business logic in model classes
+     - Server Components first: Only 'use client' when needed
+     - Server Actions: For mutations, not API routes
+     - State as records: Not boolean columns
+     - Content constants: No hardcoded UI text
   4. Run tests after each significant change
-  5. Mark task as completed
-  6. Commit with conventional format
+  5. Validate against Pattern Enforcement Checklist
+  6. Mark task as completed
+  7. Commit with conventional format
+```
+
+### Pattern Enforcement Checklist (VALIDATE BEFORE COMMIT)
+
+```
+| Check | Requirement |
+|-------|-------------|
+| Multi-tenancy | ALL Prisma operations include org_id/tenantId |
+| Enum validation | Only use enums from prisma/schema.prisma |
+| JSON types | Use `as Prisma.InputJsonValue` for JSON fields |
+| Library APIs | Match package.json installed versions |
+| Named exports | No `export default` |
+| Zod validation | All inputs validated |
+| Content constants | No hardcoded UI text |
+| Server Components | Only 'use client' when truly needed |
 ```
 
 ### Phase 3: Quality Check

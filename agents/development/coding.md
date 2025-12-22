@@ -7,6 +7,12 @@ Implement individual tasks from the task plan with proper code, tests, and docum
 
 ## Inputs (Required)
 - `task_id`: Specific task to implement (e.g., TASK-001)
+- **CRITICAL - Read These FIRST (Architecture Rules)**:
+  - `CLAUDE.md` (ROOT - quick reference, MUST be in project root)
+  - `.claude/rules/backend-architecture.md` (multi-tenancy, patterns)
+  - `.claude/rules/frontend-architecture.md` (component patterns)
+  - `.claude/rules/design-system.md` (UI patterns)
+  - `prisma/schema.prisma` (database schema, enums, types)
 - **Context Files**:
   - `docs/tasks.json` (for task details and dependencies)
   - `docs/prd.json` (for feature context and requirements)
@@ -14,22 +20,61 @@ Implement individual tasks from the task plan with proper code, tests, and docum
   - `docs/flow.json` (for system interactions)
   - `docs/adr.json` (for architectural constraints)
   - `docs/work-log.json` (for progress tracking and crash recovery)
-  - `app/models.py` (for validation schema)
+- **Existing Code Context**:
+  - Read similar existing files before writing new ones
+  - Check `package.json` for installed library versions
+  - Review existing patterns in the same domain
 
 ## Task
 Implement a single task with complete code, comprehensive tests, and updated documentation.
 
 ### Process Steps
-1. **Load Context**: Read task details and all referenced artifacts
-2. **Check Work Log**: Read `docs/work-log.json` to check if task was previously attempted
-3. **Update Work Log - Started**: Mark task as `in_progress` in work-log.json
-4. **Validate Dependencies**: Ensure prerequisite tasks are complete (check work-log.json for status)
-5. **Implement Code**: Write production-ready code following best practices
-6. **Write Tests**: Create unit, integration, and acceptance tests
-7. **Update Documentation**: Update relevant docs and comments
-8. **Validate Output**: Run tests and linting
-9. **Update Work Log - Completed**: Mark task as `completed` with files_modified and commits
-10. **Emit Result**: Output implementation report in JSON
+
+#### Phase 0: Load Architecture Rules (MANDATORY - DO NOT SKIP)
+1. **Read CLAUDE.md** in project root - understand project context
+2. **Read .claude/rules/backend-architecture.md** - multi-tenancy, patterns
+3. **Read .claude/rules/frontend-architecture.md** - component patterns
+4. **Read prisma/schema.prisma** - understand actual enums, types, relations
+5. **Read package.json** - check installed library versions
+
+#### Phase 1: Load Task Context
+6. **Load Context**: Read task details from `docs/tasks.json`
+7. **Check Work Log**: Read `docs/work-log.json` for previous attempts
+8. **Update Work Log - Started**: Mark task as `in_progress`
+9. **Validate Dependencies**: Ensure prerequisite tasks are complete
+
+#### Phase 2: Understand Existing Code
+10. **Read Existing Files**: Before writing any code, read existing files in the same domain
+11. **Identify Patterns**: Note how multi-tenancy, error handling, types are done
+12. **Check Imports**: Understand barrel export structure
+
+#### Phase 3: Implement
+13. **Implement Code**: Write code following observed patterns AND architecture rules
+14. **Write Tests**: Create unit, integration, and acceptance tests
+15. **Update Documentation**: Update relevant docs and comments
+
+#### Phase 4: Validate
+16. **Run Pattern Checks**: Verify against enforcement checklist (see below)
+17. **Validate Output**: Run tests and linting
+18. **Update Work Log - Completed**: Mark task as `completed`
+19. **Emit Result**: Output implementation report in JSON
+
+### Pattern Enforcement Checklist (MUST PASS)
+
+Before marking any task complete, verify:
+
+| Check | Requirement | How to Verify |
+|-------|-------------|---------------|
+| **Multi-tenancy** | ALL Prisma create/update include `org_id` or `workspace_id` | Search for `prisma.*.create` without tenant field |
+| **Enum validation** | Only use enums defined in `prisma/schema.prisma` | Cross-reference status values against schema |
+| **JSON types** | Use `as Prisma.InputJsonValue` for JSON fields | Check Prisma JSON column assignments |
+| **Composite keys** | Handle nullable fields in composite constraints | Check upsert where clauses with null values |
+| **Library versions** | Use APIs matching `package.json` versions | Read library docs for installed version |
+| **Named exports** | No `export default` | Grep for `export default` |
+| **Barrel imports** | Import from domain root, not internals | Check import paths |
+| **Zod validation** | All API inputs validated with Zod | Check controller handlers |
+| **Suspense (Next.js 14)** | `useSearchParams`/`usePathname` wrapped in Suspense | Check page components |
+| **Test exclusion** | `tsconfig.json` excludes test files | Check exclude array |
 
 ### Implementation Requirements
 - Code must follow project style guidelines and ADR decisions

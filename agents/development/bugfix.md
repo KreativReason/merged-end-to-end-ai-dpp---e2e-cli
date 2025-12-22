@@ -30,19 +30,57 @@ Systematically diagnose and fix bugs while preventing regressions and documentin
 
 ## Context Files (Auto-loaded)
 
+**CRITICAL - Read These FIRST (Architecture Rules)**:
+- `CLAUDE.md` (ROOT - quick reference, MUST be in project root)
+- `.claude/rules/backend-architecture.md` (multi-tenancy, patterns)
+- `.claude/rules/frontend-architecture.md` (component patterns)
+- `.claude/rules/design-system.md` (UI patterns)
+- `prisma/schema.prisma` (database schema, enums, types)
+- `package.json` (installed library versions)
+
+**Bug Context**:
 - Recent git history (last 10 commits)
 - Test failure logs
 - `docs/flows/` - Expected behavior reference
 - `docs/erd.json` - Data model reference
+- `docs/work-log.json` - Previous session progress
+
+**Existing Code Context**:
+- Read similar existing files before making changes
+- Review existing patterns in the same domain
 
 ## Process Steps
 
+### Phase 0: Load Architecture Rules (MANDATORY - DO NOT SKIP)
+
+1. **Read CLAUDE.md** in project root - understand project context
+2. **Read .claude/rules/backend-architecture.md** - multi-tenancy, patterns
+3. **Read .claude/rules/frontend-architecture.md** - component patterns
+4. **Read prisma/schema.prisma** - understand actual enums, types, relations
+5. **Read package.json** - check installed library versions
+
+### Phase 1: Investigate & Fix
+
 1. **Reproduce**: Confirm the bug and document reproduction steps
 2. **Diagnose**: Identify root cause through investigation
-3. **Plan Fix**: Design minimal fix that addresses root cause
-4. **Implement**: Write fix with regression test
+3. **Plan Fix**: Design minimal fix that addresses root cause (following architecture rules)
+4. **Implement**: Write fix with regression test (matching existing patterns)
 5. **Verify**: Confirm fix and run full test suite
 6. **Document**: Record root cause and prevention measures
+
+### Pattern Enforcement Checklist (MUST PASS)
+
+Before marking any fix complete, verify:
+
+| Check | Requirement | How to Verify |
+|-------|-------------|---------------|
+| **Multi-tenancy** | ALL Prisma operations include `org_id` or `tenantId` | Search for `prisma.*` without tenant field |
+| **Enum validation** | Only use enums defined in `prisma/schema.prisma` | Cross-reference status values against schema |
+| **JSON types** | Use `as Prisma.InputJsonValue` for JSON fields | Check Prisma JSON column assignments |
+| **Library versions** | Use APIs matching `package.json` versions | Read library docs for installed version |
+| **Named exports** | No `export default` | Grep for `export default` |
+| **Zod validation** | All inputs validated with Zod | Check handler inputs |
+| **Existing patterns** | Fix matches surrounding code patterns | Compare with similar files |
 
 ## Investigation Checklist
 

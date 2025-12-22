@@ -27,11 +27,24 @@ Add new features to an existing project following established patterns and maint
 
 ## Context Files (Auto-loaded)
 
+**CRITICAL - Read These FIRST (Architecture Rules)**:
+- `CLAUDE.md` (ROOT - quick reference, MUST be in project root)
+- `.claude/rules/backend-architecture.md` (multi-tenancy, patterns)
+- `.claude/rules/frontend-architecture.md` (component patterns)
+- `.claude/rules/design-system.md` (UI patterns)
+- `prisma/schema.prisma` (database schema, enums, types)
+- `package.json` (installed library versions)
+
+**Project Artifacts**:
 - `docs/prd.json` - Validate against existing requirements
 - `docs/erd.json` - Check data model impact
 - `docs/flows/final_flow.json` - Understand affected flows
 - `docs/adr/project.json` - Follow architecture decisions
 - `docs/tasks.json` - Check for related existing tasks
+
+**Existing Code Context**:
+- Read similar existing files before writing new ones
+- Review existing patterns in the same domain
 
 ## Process Steps
 

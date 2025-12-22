@@ -382,11 +382,32 @@ def inject_quality_tools(project_root: Path, variables: Dict[str, Any], dry_run:
 
 
 def inject_ai_context(project_root: Path, variables: Dict[str, Any], dry_run: bool) -> int:
-    """Inject CLAUDE.md, .cursorrules, PROJECT_CONTEXT.md."""
+    """Inject CLAUDE.md, KREATIVREASON-GUIDE.md, .cursorrules, PROJECT_CONTEXT.md.
+
+    Direct copy files (CLAUDE.md, KREATIVREASON-GUIDE.md) are copied as-is without
+    variable substitution - these are the canonical architecture guides that should
+    be used "without change" in every child project.
+    """
     files_injected = 0
 
+    # Direct copy files FIRST - canonical architecture guides (no variable substitution)
+    # These files are intentionally copied without modification
+    direct_copy_files = [
+        "CLAUDE.md",
+        "KREATIVREASON-GUIDE.md",
+    ]
+
+    for filename in direct_copy_files:
+        source = TEMPLATES_DIR / filename
+        target = project_root / filename
+        if source.exists():
+            if not dry_run:
+                ensure_directory(target.parent)
+                target.write_text(source.read_text())
+            files_injected += 1
+
+    # Template files (with variable substitution) - for project-specific context
     templates = [
-        ("CLAUDE.md.template", "CLAUDE.md"),
         (".cursorrules.template", ".cursorrules"),
         ("PROJECT_CONTEXT.md.template", "PROJECT_CONTEXT.md"),
     ]
