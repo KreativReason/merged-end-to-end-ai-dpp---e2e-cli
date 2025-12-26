@@ -16,7 +16,7 @@
         "repo": "KreativReason/merged-end-to-end-ai-dpp---e2e-cli"
       },
       "description": "E2E Pipeline with Human-in-the-Loop validation. Interview to production-ready project.",
-      "version": "2.0.0"
+      "version": "2.1.0"
     }
   ]
 }
