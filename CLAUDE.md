@@ -54,7 +54,7 @@ merged-end-to-end-ai-dpp---e2e-cli/
 │   ├── workflow/             # Automation (5 agents)
 │   ├── research/             # Documentation (3 agents)
 │   └── docs/                 # README generation (1 agent)
-├── commands/workflows/       # 6 command workflows
+├── commands/workflows/       # 7 command workflows
 ├── skills/                   # 8 reusable capabilities
 ├── scripts/
 │   └── scaffold_apply.py     # Deterministic file generation
@@ -108,6 +108,12 @@ projects/
 | `/kreativreason:work` | Execute work plan with continuous testing |
 | `/kreativreason:review` | Multi-agent code review (11 reviewers in parallel) |
 | `/kreativreason:triage` | Process review findings into actionable todos |
+
+### Debugging Commands
+
+| Command | Description |
+|---------|-------------|
+| `/kreativreason:debug` | Interactive browser debug session with Playwright (screenshots, console, network) |
 
 ## Validation Layer
 
