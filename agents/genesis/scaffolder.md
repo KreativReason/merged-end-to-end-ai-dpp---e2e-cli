@@ -112,10 +112,11 @@ The scaffolder MUST inject the following into generated projects:
 
 | Category | Files | Purpose |
 |----------|-------|---------|
+| AI Context | `.claude/CLAUDE.md` | **KreativReason Quality Standard (CRITICAL)** |
 | AI Context | `.claude/rules/backend-architecture.md` | Backend patterns |
 | AI Context | `.claude/rules/frontend-architecture.md` | Frontend patterns |
 | AI Context | `.claude/rules/design-system.md` | UI design system |
-| AI Context | `CLAUDE.md` | Quick reference |
+| AI Context | `CLAUDE.md` | Quick reference (symlink to .claude/CLAUDE.md) |
 | AI Context | `.cursorrules` | Cursor IDE |
 | AI Context | `PROJECT_CONTEXT.md` | Business context |
 | Quality | `.eslintrc.js` | Barrel imports, kebab-case |
@@ -283,6 +284,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
     "templates_to_apply": [
       {
+        "id": "SCAFFOLD-000",
+        "name": "KreativReason Quality Standard",
+        "source_path": "templates/child-project/.claude/",
+        "target_path": ".claude/",
+        "variables": {},
+        "files_to_generate": [
+          "CLAUDE.md"
+        ],
+        "critical": true,
+        "description": "The core development guide - MUST be present in every child project"
+      },
+      {
         "id": "SCAFFOLD-001",
         "name": "Architecture Rules",
         "source_path": "templates/child-project/.claude/rules/",
@@ -344,6 +357,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     ],
 
     "directory_structure": {
+      ".claude/": "AI context and quality standards",
+      ".claude/CLAUDE.md": "KreativReason Quality Standard (READ FIRST)",
+      ".claude/rules/": "Architecture rules (backend, frontend, design)",
       "src/": "Source code root",
       "src/domains/": "Business domain modules",
       "src/domains/identity/": "Identity domain (User management)",
@@ -354,7 +370,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       "src/components/ui/": "Design system primitives",
       "src/infrastructure/": "External integrations",
       "src/middleware/": "Express middleware",
-      ".claude/rules/": "AI agent instructions",
       ".husky/": "Git hooks"
     },
 
@@ -441,6 +456,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     "eslint_configured": true,
     "design_system_injected": true,
     "files_created": [
+      {
+        "path": ".claude/CLAUDE.md",
+        "size_bytes": 18000,
+        "permissions": "644",
+        "critical": true
+      },
       {
         "path": ".claude/rules/backend-architecture.md",
         "size_bytes": 15000,

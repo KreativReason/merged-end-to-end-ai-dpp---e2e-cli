@@ -1,6 +1,6 @@
 {
   "name": "kreativreason-e2e-pipeline",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Merged E2E Pipeline with Human-in-the-Loop validation. From client interview to production-ready project with Pydantic-validated artifacts, deterministic scaffolding, and continuous compounding development.",
   "author": {
     "name": "KreativReason",
