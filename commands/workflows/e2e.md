@@ -42,16 +42,27 @@ The E2E command reads your project's journey and flow artifacts, then systematic
 
 ## Workflow
 
-### Phase 0: Load Test Context
+### Phase 0: Load Test Context (A Priori Memory)
+
+The E2E command relies on genesis artifacts that were transferred to the child project during scaffolding. These artifacts provide the "a priori memory" - the project knows its flows and journeys from birth.
 
 ```
-1. Find project artifacts:
-   - docs/flow.json OR projects/{project}/docs/flow-{project}.json
-   - docs/journey.json OR projects/{project}/docs/journey-{project}.json
+1. Load genesis artifacts from docs/:
+   - docs/flow.json    → User/system flows (FLOW-001, FLOW-002, etc.)
+   - docs/journey.json → User journeys with touchpoints (JRN-001, etc.)
+   - docs/prd.json     → Feature context (FR-XXX references)
+   - docs/erd.json     → Entity context (for data validation)
+
 2. Parse all defined flows and journeys
-3. Build test execution plan
+3. Build test execution plan based on:
+   - Journey touchpoints → Test steps
+   - Flow actions → Playwright commands
+   - Expected outcomes → Assertions
+
 4. Display summary and confirm with user
 ```
+
+**Note**: If artifacts are missing, the scaffolder may not have transferred them. Run `/kreativreason:genesis` with the latest plugin version to ensure artifacts are copied to the child project.
 
 ### Phase 1: Environment Setup
 
@@ -414,5 +425,13 @@ If a step fails:
 ## Prerequisites
 
 - Application must be running at the base URL
-- Flow/journey artifacts must exist in project
+- **Genesis artifacts must exist in `docs/`** (transferred during scaffolding):
+  - `docs/flow.json` - Required for flow-based testing
+  - `docs/journey.json` - Required for journey-based testing
+  - `docs/prd.json` - Feature context (optional but recommended)
+  - `docs/erd.json` - Entity context (optional but recommended)
 - Playwright MCP server must be configured (already in plugin)
+
+**If artifacts are missing**: The child project was scaffolded before artifact transfer was implemented. Either:
+1. Re-run `/kreativreason:genesis` with plugin v2.3.0+
+2. Manually copy artifacts from plugin's `projects/{project}/docs/` to child's `docs/`

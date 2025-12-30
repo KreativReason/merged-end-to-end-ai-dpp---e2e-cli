@@ -128,6 +128,48 @@ The scaffolder MUST inject the following into generated projects:
 | Design | `tailwind.config.js` | Brand colors |
 | **Progress** | `docs/work-log.json` | **Work session tracking (crash recovery)** |
 | **Progress** | `CHANGELOG.md` | **Human-readable change history** |
+| **Genesis** | `docs/prd.json` | **Product requirements (a priori memory)** |
+| **Genesis** | `docs/flow.json` | **User/system flows (E2E testing source)** |
+| **Genesis** | `docs/erd.json` | **Entity relationships (data model)** |
+| **Genesis** | `docs/journey.json` | **User journeys (E2E testing paths)** |
+| **Genesis** | `docs/tasks.json` | **Implementation backlog** |
+| **Genesis** | `docs/adr.json` | **Architecture decisions (WHY)** |
+| **Genesis** | `docs/scaffold.json` | **Scaffold plan (project blueprint)** |
+
+### Genesis Artifacts Transfer (A Priori Memory)
+
+**CRITICAL**: The scaffolder MUST copy ALL genesis artifacts from the plugin's `projects/{project}/docs/` directory to the child project's `docs/` folder. This gives the child project:
+
+1. **Context** - Understanding of requirements, architecture, and decisions
+2. **E2E Testing** - The `/kreativreason:e2e` command needs `journey.json` and `flow.json` to execute user flow tests
+3. **Traceability** - Link between features (FR-XXX), entities (ENT-XXX), and tasks (TASK-XXX)
+4. **Continuity** - The child project knows "where it came from and where it's going"
+
+**Artifacts to Copy**:
+
+| Source (Plugin) | Destination (Child) | Purpose |
+|-----------------|---------------------|---------|
+| `projects/{project}/docs/prd-{project}.json` | `docs/prd.json` | Requirements & features |
+| `projects/{project}/docs/flow-{project}.json` | `docs/flow.json` | User/system flows |
+| `projects/{project}/docs/erd-{project}.json` | `docs/erd.json` | Entity relationships |
+| `projects/{project}/docs/journey-{project}.json` | `docs/journey.json` | User journeys (E2E paths) |
+| `projects/{project}/docs/tasks-{project}.json` | `docs/tasks.json` | Implementation tasks |
+| `projects/{project}/docs/adr-{project}.json` | `docs/adr.json` | Architecture decisions |
+| `projects/{project}/docs/scaffold-{project}.json` | `docs/scaffold.json` | Project blueprint |
+
+**Child Project docs/ Structure**:
+```
+child-project/
+└── docs/
+    ├── prd.json           # What to build (features, stories)
+    ├── flow.json          # How users interact (flows)
+    ├── erd.json           # Data model (entities, relationships)
+    ├── journey.json       # User paths (E2E test source)
+    ├── tasks.json         # Implementation backlog
+    ├── adr.json           # Why decisions were made
+    ├── scaffold.json      # How project was structured
+    └── work-log.json      # Progress tracking (crash recovery)
+```
 
 ### Initial Progress Tracking Files
 
